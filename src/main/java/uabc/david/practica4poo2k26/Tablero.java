@@ -20,6 +20,10 @@ public class Tablero {
         }
     }
 
+    public String getColor() {
+        return this.colorTablero;
+    }
+
     public String getPosicion(Posicion posicion) {
         return cuadricula.get(posicion.getFila()).get(posicion.getColumna());
     }

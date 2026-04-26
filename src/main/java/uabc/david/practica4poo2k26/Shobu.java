@@ -152,6 +152,49 @@ public class Shobu {
         return false;
     }
 
+    public ArrayList<Posicion> obtenerMovimientosLegales(Tablero tableroPasivo, Posicion inicio) {
+        ArrayList<Posicion> destinosValidos = new ArrayList<>();
+
+        for (int fila = 0; fila < 4; fila++) {
+            for (int columma = 0; columma < 4; columma++) {
+                Posicion destinoCandidato = new Posicion(fila, columma);
+
+                if (esPasivoValido(tableroPasivo, inicio, destinoCandidato)) {
+                    int[] vector = obtenerVectorMovimiento(inicio, destinoCandidato);
+
+                    if (hayEspejoValido(tableroPasivo, vector)) {
+                        destinosValidos.add(destinoCandidato);
+                    }
+                }
+            }
+        }
+        return destinosValidos;
+    }
+
+    private boolean hayEspejoValido(Tablero tableroPasivo, int[] vector) {
+        String colorOpuesto = tableroPasivo.getColor().equals("BLANCO") ? "NEGRO" : "BLANCO";
+
+        for (Tablero tablero : tableros.values()) {
+            if (tablero.getColor().equals(colorOpuesto)) {
+
+                for (int fila = 0; fila < 4; fila++) {
+                    for (int columna = 0; columna < 4; columna++) {
+                        Posicion posicionPieza = new Posicion(fila, columna);
+
+                        if (tablero.getPosicion(posicionPieza).equals(this.turnoActual)) {
+                            if (esAgresivoValido(tablero, posicionPieza, vector)) {
+
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public Tablero getTablero(String nombre) {
         return tableros.get(nombre);
     }
