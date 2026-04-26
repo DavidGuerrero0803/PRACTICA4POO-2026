@@ -91,6 +91,67 @@ public class Shobu {
         return true;
     }
 
+    public boolean esAgresivoValido(Tablero tablero, Posicion inicio, int[] vector) {
+        ArrayList<Posicion> trayectoria = obtenerTrayectoria(inicio, vector);
+        Posicion destinoFinal = trayectoria.get(trayectoria.size() - 1);
+
+        if (estaFueraDeRango(destinoFinal)) {
+            return false;
+        }
+
+        int piezasEnemigasEnCamino = 0;
+
+        for (Posicion posicion : trayectoria) {
+            String contenido = tablero.getPosicion(posicion);
+
+            if (contenido.equals(this.turnoActual)) {
+                return false;
+            }
+
+            if (!contenido.equals("V") && !contenido.equals(this.turnoActual)) {
+                piezasEnemigasEnCamino++;
+
+                if (!posicion.equals(destinoFinal)) {
+                    return false;
+                }
+            }
+        }
+
+        if (piezasEnemigasEnCamino > 1) {
+            return false;
+        }
+
+        if (piezasEnemigasEnCamino == 1) {
+            return validarEmpuje(tablero, destinoFinal, vector);
+        }
+
+        return true;
+    }
+
+    private boolean estaFueraDeRango(Posicion posicion) {
+        return posicion.getFila() < 0 || posicion.getFila() > 3 || posicion.getColumna() < 0 || posicion.getColumna() > 3;
+    }
+
+    private boolean validarEmpuje(Tablero tablero, Posicion posEnemiga, int[] vector) {
+        int pasoFila = (int) Math.signum(vector[0]);
+        int pasoColumna = (int) Math.signum(vector[1]);
+
+        int filaDestinoEnemigo = posEnemiga.getFila() + pasoFila;
+        int colDestinoEnemigo = posEnemiga.getColumna() + pasoColumna;
+
+        if (filaDestinoEnemigo < 0 || filaDestinoEnemigo > 3 ||
+                colDestinoEnemigo < 0 || colDestinoEnemigo > 3) {
+            return true;
+        }
+
+        Posicion destinoEnemigo = new Posicion(filaDestinoEnemigo, colDestinoEnemigo);
+        if (tablero.getPosicion(destinoEnemigo).equals("V")) {
+            return true;
+        }
+
+        return false;
+    }
+
     public Tablero getTablero(String nombre) {
         return tableros.get(nombre);
     }
