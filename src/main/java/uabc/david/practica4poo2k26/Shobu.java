@@ -19,6 +19,14 @@ public class Shobu {
         tableros.put("ABAJO_IZQUIERDA", new Tablero("BLANCO"));
         tableros.put("ABAJO_DERECHA", new Tablero("NEGRO"));
 
+        for (int i = 0; i < 4; i++) {
+            // N = negro.
+            // B = blanco.
+            tableros.get("ARRIBA_IZQUIERDA").setPosicion(new Posicion(0, i), "N");
+            tableros.get("ARRIBA_DERECHA").setPosicion(new Posicion(0, i), "N");
+            tableros.get("ABAJO_IZQUIERDA").setPosicion(new Posicion(3, i), "B");
+            tableros.get("ABAJO_DERECHA").setPosicion(new Posicion(3, i), "B");
+        }
     }
 
     public Tablero getTablero(String nombre) {
