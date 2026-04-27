@@ -4,11 +4,20 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.paint.Color;
+import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ShobuMain extends Application {
     private Shobu juego;
     private GridPane contenedorPrincipal;
+    private Posicion inicioPasivo;
+    private String tableroPasivoNombre;
+    private int[] vectorActual;
 
     @Override
     public void start(Stage stage) {
@@ -51,9 +60,115 @@ public class ShobuMain extends Application {
         return grid;
     }
 
-    private void manejarClic(String tablero, int fila, int columna) {
-        System.out.println("Clic en tablero " + tablero + ", posición: " + fila + "," + columna);
+    private Circle crearPiezaVisual(String tipo) {
+        if (tipo.equals("V")) return null;
 
+        Circle pieza = new Circle(20);
+
+        if (tipo.equals("N")) {
+            pieza.setFill(Color.BLACK);
+        } else {
+            pieza.setFill(Color.WHITE);
+            pieza.setStroke(Color.GRAY);
+        }
+
+        pieza.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
+
+        return pieza;
+    }
+
+    private HashMap<String, Button[][]> botonesGui = new HashMap<>();
+
+    private void actualizarInterfaz() {
+        for (String nombreTablero : botonesGui.keySet()) {
+            Tablero logicaTablero = juego.getTablero(nombreTablero);
+            Button[][] matrizBotones = botonesGui.get(nombreTablero);
+
+            for (int fila = 0; fila < 4; fila++) {
+                for (int columna = 0; columna < 4; columna++) {
+                    String contenido = logicaTablero.getPosicion(new Posicion(fila, columna));
+                    matrizBotones[fila][columna].setGraphic(crearPiezaVisual(contenido));
+                }
+            }
+        }
+    }
+
+    private void manejarClic(String nombreTablero, int f, int c) {
+        Posicion clicPos = new Posicion(f, c);
+        Tablero tableroActual = juego.getTablero(nombreTablero);
+
+        if (inicioPasivo == null) {
+            if (esPiezaDelJugadorActual(tableroActual, clicPos)) {
+                inicioPasivo = clicPos;
+                tableroPasivoNombre = nombreTablero;
+
+                ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
+                iluminarCasillas(nombreTablero, legales);
+            }
+        }
+
+        else if (vectorActual == null) {
+            if (juego.esPasivoValido(tableroActual, inicioPasivo, clicPos) && nombreTablero.equals(tableroPasivoNombre)) {
+                vectorActual = juego.obtenerVectorMovimiento(inicioPasivo, clicPos);
+
+                prepararSeleccionAgresiva();
+            } else {
+                resetearSeleccion();
+            }
+        }
+
+        else {
+            if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
+
+                ejecutarTurnoCompleto(clicPos, nombreTablero);
+                actualizarInterfaz();
+                resetearSeleccion();
+            }
+        }
+    }
+
+    private boolean esPiezaDelJugadorActual(Tablero tablero, Posicion pos) {
+        String contenido = tablero.getPosicion(pos);
+        return contenido.equals(juego.getTurnoActual());
+    }
+
+    private void iluminarCasillas(String nombreTablero, ArrayList<Posicion> destinos) {
+        Button[][] matriz = botonesGui.get(nombreTablero);
+        for (Posicion pos : destinos) {
+
+            matriz[pos.getFila()][pos.getColumna()].setStyle(
+                    "-fx-border-color: #00ff00; -fx-border-width: 3; -fx-border-radius: 5;"
+            );
+        }
+    }
+
+    private void prepararSeleccionAgresiva() {
+        System.out.println("Movimiento pasivo fijado ");
+    }
+
+    private void resetearSeleccion() {
+        inicioPasivo = null;
+        tableroPasivoNombre = null;
+        vectorActual = null;
+
+        for (Button[][] matriz : botonesGui.values()) {
+            for (int fila = 0; fila < 4; fila++) {
+                for (int columna = 0; columna < 4; columna++) {
+                    matriz[fila][columna].setStyle("-fx-border-color: transparent;");
+                }
+            }
+        }
+    }
+
+    private void ejecutarTurnoCompleto(Posicion inicioAgresivo, String nombreTabAgresivo) {
+        juego.moverPieza(tableroPasivoNombre, inicioPasivo, vectorActual);
+
+        juego.moverPieza(nombreTabAgresivo, inicioAgresivo, vectorActual);
+
+        juego.cambiarTurno();
+
+        actualizarInterfaz();
+        resetearSeleccion();
     }
 
     public static void main(String[] args) {

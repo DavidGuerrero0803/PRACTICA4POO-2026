@@ -30,6 +30,18 @@ public class Shobu {
         }
     }
 
+    public String getTurnoActual() {
+        return this.turnoActual;
+    }
+
+    public void cambiarTurno() {
+        if (this.turnoActual.equals("NEGRO")) {
+            this.turnoActual = "BLANCO";
+        } else {
+            this.turnoActual = "NEGRO";
+        }
+    }
+
     public int[] obtenerVectorMovimiento(Posicion inicio, Posicion fin) {
         return new int[] {fin.getFila() - inicio.getFila(), fin.getColumna() - inicio.getColumna()};
     }
@@ -193,6 +205,37 @@ public class Shobu {
         }
 
         return false;
+    }
+
+    public void moverPieza(String nombreTablero, Posicion inicio, int[] vector) {
+        Tablero tablero = tableros.get(nombreTablero);
+        String pieza = tablero.getPosicion(inicio);
+
+        tablero.setPosicion(inicio, "V");
+
+        Posicion destino = new Posicion(inicio.getFila() + vector[0],
+                inicio.getColumna() + vector[1]);
+
+        if (!tablero.getPosicion(destino).equals("V") && !tablero.getPosicion(destino).equals(pieza)) {
+            aplicarEmpujeLogico(tablero, destino, vector);
+        }
+
+        tablero.setPosicion(destino, pieza);
+    }
+
+    private void aplicarEmpujeLogico(Tablero tablero, Posicion posEnemigo, int[] vector) {
+        int pasoFila = (int) Math.signum(vector[0]);
+        int pasoColumna = (int) Math.signum(vector[1]);
+
+        int nuevaFila = posEnemigo.getFila() + pasoFila;
+        int nuevaCol = posEnemigo.getColumna() + pasoColumna;
+
+        if (nuevaFila < 0 || nuevaFila > 3 || nuevaCol < 0 || nuevaCol > 3) {
+
+        } else {
+
+            tablero.setPosicion(new Posicion(nuevaFila, nuevaCol), tablero.getPosicion(posEnemigo));
+        }
     }
 
     public Tablero getTablero(String nombre) {
