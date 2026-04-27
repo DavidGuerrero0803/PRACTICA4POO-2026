@@ -33,9 +33,8 @@ public class ShobuMain extends Application {
         VBox interfaz = new VBox(5);
         interfaz.setAlignment(Pos.CENTER);
 
-
         Label titulo = new Label("Shobu");
-        titulo.setFont(Font.font("Arial", 75));
+        titulo.setFont(Font.font("Arial", 80));
         titulo.setTextFill(Color.BLACK);
 
         turnoNegro = new Label("JUGADOR NEGRO");
@@ -58,7 +57,7 @@ public class ShobuMain extends Application {
         contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
         contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
 
-        interfaz.getChildren().addAll(titulo, turnoNegro, contenedorPrincipal, labelEstado, turnoBlanco);
+        interfaz.getChildren().addAll(titulo, turnoBlanco, contenedorPrincipal, labelEstado, turnoNegro);
 
         actualizarInterfaz();
 
@@ -140,16 +139,19 @@ public class ShobuMain extends Application {
         }
 
         String turno = juego.getTurnoActual();
+
         if (turno.equals("B")) {
-            turnoNegro.setText("TU TURNO, JUGADOR BLANCO");
-            turnoNegro.setTextFill(Color.DARKBLUE);
-            turnoBlanco.setText("JUGADOR NEGRO");
-            turnoBlanco.setTextFill(Color.GRAY);
-        } else {
-            turnoBlanco.setText("TU TURNO, JUGADOR NEGRO");
+            turnoBlanco.setText("-> TU TURNO, JUGADOR BLANCO");
             turnoBlanco.setTextFill(Color.DARKBLUE);
-            turnoNegro.setText("JUGADOR BLANCO");
+
+            turnoNegro.setText("JUGADOR NEGRO");
             turnoNegro.setTextFill(Color.GRAY);
+        } else {
+            turnoNegro.setText("-> TU TURNO, JUGADOR NEGRO)");
+            turnoNegro.setTextFill(Color.DARKBLUE);
+
+            turnoBlanco.setText("JUGADOR BLANCO");
+            turnoBlanco.setTextFill(Color.GRAY);
         }
 
     }
@@ -205,7 +207,7 @@ public class ShobuMain extends Application {
             if (!colorPasivo.equals(colorAgresivo)) {
                 if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
                     ejecutarTurnoCompleto(clicPos, nombreTablero);
-                    mostrarMensaje("Inicia tu movimiento PASIVO", false);
+
                 } else {
                     mostrarMensaje("Movimiento NO permitido (Obstruido o fuera de límites).", true);
                 }
@@ -251,13 +253,24 @@ public class ShobuMain extends Application {
 
     private void ejecutarTurnoCompleto(Posicion inicioAgresivo, String nombreTabAgresivo) {
         juego.moverPieza(tableroPasivoNombre, inicioPasivo, vectorActual);
-
         juego.moverPieza(nombreTabAgresivo, inicioAgresivo, vectorActual);
 
-        juego.cambiarTurno();
-
-        actualizarInterfaz();
         resetearSeleccion();
+        actualizarInterfaz();
+
+        String ganador = juego.verificarGanador();
+
+        if (ganador != null) {
+            String colorGanador = ganador.equals("N") ? "NEGRO" : "BLANCO";
+            labelEstado.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+            mostrarMensaje("HA GANADO EL JUGADOR " + colorGanador, false);
+
+            contenedorPrincipal.setDisable(true);
+        } else {
+            juego.cambiarTurno();
+            actualizarInterfaz();
+            mostrarMensaje("Turno completado. Inicia movimiento PASIVO.", false);
+        }
     }
 
     public static void main(String[] args) {

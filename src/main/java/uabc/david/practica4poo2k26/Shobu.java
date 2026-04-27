@@ -236,6 +236,37 @@ public class Shobu {
         }
     }
 
+    public String verificarGanador() {
+        String[] posicionesTableros = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA", "ABAJO_IZQUIERDA", "ABAJO_DERECHA"};
+
+        for (String nombre : posicionesTableros) {
+            Tablero tablero = tableros.get(nombre);
+            int negras = 0;
+            int blancas = 0;
+
+            for (int fila = 0; fila < 4; fila++) {
+                for (int columna = 0; columna < 4; columna++) {
+                    String posiciones = tablero.getPosicion(new Posicion(fila, columna));
+                    if (posiciones.equals("N")) {
+                        negras++;
+                    }
+                    if (posiciones.equals("B")) {
+                        blancas++;
+                    }
+                }
+            }
+
+            if (negras == 0) {
+                return "B";
+            }
+            if (blancas == 0) {
+                return "N";
+            }
+        }
+
+        return null;
+    }
+
     public Tablero getTablero(String nombre) {
         return tableros.get(nombre);
     }
