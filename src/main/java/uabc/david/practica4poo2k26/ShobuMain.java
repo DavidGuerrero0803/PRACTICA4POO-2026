@@ -115,11 +115,25 @@ public class ShobuMain extends Application {
 
         if (inicioPasivo == null) {
             if (esPiezaDelJugadorActual(tableroActual, clicPos)) {
-                inicioPasivo = clicPos;
-                tableroPasivoNombre = nombreTablero;
 
-                ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
-                iluminarCasillas(nombreTablero, legales);
+                boolean esMiHome = false;
+                String turno = juego.getTurnoActual();
+
+                if (turno.equals("B") && nombreTablero.startsWith("ARRIBA")) {
+                    esMiHome = true;
+                } else if (turno.equals("N") && nombreTablero.startsWith("ABAJO")) {
+                    esMiHome = true;
+                }
+
+                if (esMiHome) {
+                    inicioPasivo = clicPos;
+                    tableroPasivoNombre = nombreTablero;
+
+                    ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
+                    iluminarCasillas(nombreTablero, legales);
+                } else {
+                    System.out.println("Tu movimiento pasivo solo puede hacerse en uno de tus tableros");
+                }
             }
         }
 

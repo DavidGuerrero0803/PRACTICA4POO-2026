@@ -22,8 +22,8 @@ public class Shobu {
 
         for (int i = 0; i < 4; i++) {
             for (Tablero tablero : tableros.values()) {
-                tablero.setPosicion(new Posicion(0, i), "N");
-                tablero.setPosicion(new Posicion(3, i), "B");
+                tablero.setPosicion(new Posicion(0, i), "B");
+                tablero.setPosicion(new Posicion(3, i), "N");
             }
         }
     }
