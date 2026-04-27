@@ -1,6 +1,7 @@
 package uabc.david.practica4poo2k26;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
@@ -23,6 +24,8 @@ public class ShobuMain extends Application {
     public void start(Stage stage) {
         juego = new Shobu();
         contenedorPrincipal = new GridPane();
+        contenedorPrincipal.setAlignment(Pos.CENTER);
+        contenedorPrincipal.setPadding(new javafx.geometry.Insets(20));
         contenedorPrincipal.setHgap(20);
         contenedorPrincipal.setVgap(20);
 
@@ -36,6 +39,7 @@ public class ShobuMain extends Application {
         Scene scene = new Scene(contenedorPrincipal, 800, 800);
         stage.setTitle("Shobu");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 
@@ -125,11 +129,18 @@ public class ShobuMain extends Application {
         }
 
         else {
-            if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
+            Tablero tableroPasivo = juego.getTablero(tableroPasivoNombre);
+            String colorPasivo = tableroPasivo.getColor();
+            String colorAgresivo = tableroActual.getColor();
 
-                ejecutarTurnoCompleto(clicPos, nombreTablero);
-                actualizarInterfaz();
-                resetearSeleccion();
+            if (!colorPasivo.equals(colorAgresivo)) {
+                if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
+                    ejecutarTurnoCompleto(clicPos, nombreTablero);
+
+                }
+            } else {
+                System.out.println("Debes elegir una pieza en un tablero " +
+                        (colorPasivo.equals("blanco") ? "negro" : "blanco"));
             }
         }
     }
@@ -150,7 +161,7 @@ public class ShobuMain extends Application {
     }
 
     private void prepararSeleccionAgresiva() {
-        System.out.println("Movimiento pasivo fijado ");
+        System.out.println("Se ha fijado el movimiento pasivo");
     }
 
     private void resetearSeleccion() {
