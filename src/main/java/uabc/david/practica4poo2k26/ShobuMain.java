@@ -59,7 +59,7 @@ public class ShobuMain extends Application {
                 botonCasilla.setOnAction(e -> manejarClic(nombreTablero, fila, columna));
 
                 matrizBotones[filas][columnas] = botonCasilla;
-
+                botonCasilla.setStyle("-fx-background-color: rgba(255, 255, 255, 0.1);");
                 grid.add(botonCasilla, columnas, filas);
             }
         }
@@ -97,6 +97,7 @@ public class ShobuMain extends Application {
                 }
             }
         }
+
     }
 
     private void manejarClic(String nombreTablero, int f, int c) {

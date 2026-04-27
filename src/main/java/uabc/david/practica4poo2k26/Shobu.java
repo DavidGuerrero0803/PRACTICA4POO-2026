@@ -9,7 +9,7 @@ public class Shobu {
 
     public Shobu() {
         this.tableros = new HashMap<>();
-        this.turnoActual = "NEGRO";
+        this.turnoActual = "N";
         prepararJuego();
     }
 
@@ -33,10 +33,10 @@ public class Shobu {
     }
 
     public void cambiarTurno() {
-        if (this.turnoActual.equals("NEGRO")) {
-            this.turnoActual = "BLANCO";
+        if (this.turnoActual.equals("N")) {
+            this.turnoActual = "B";
         } else {
-            this.turnoActual = "NEGRO";
+            this.turnoActual = "N";
         }
     }
 
