@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -31,7 +32,11 @@ public class ShobuMain extends Application {
 
         VBox interfaz = new VBox(20);
         interfaz.setAlignment(Pos.CENTER);
-        interfaz.setPadding(new Insets(20));
+        interfaz.setPadding(new Insets(10));
+
+        Label titulo = new Label("Shobu");
+        titulo.setFont(Font.font("Arial", 60));
+        titulo.setTextFill(Color.BLACK);
 
         turnoNegro = new Label("JUGADOR NEGRO");
         turnoBlanco = new Label("JUGADOR BLANCO");
@@ -50,7 +55,7 @@ public class ShobuMain extends Application {
         contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
         contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
 
-        interfaz.getChildren().addAll(turnoNegro, contenedorPrincipal, turnoBlanco);
+        interfaz.getChildren().addAll(titulo, turnoNegro, contenedorPrincipal, turnoBlanco);
 
         actualizarInterfaz();
 
