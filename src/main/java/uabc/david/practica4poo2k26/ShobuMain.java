@@ -5,7 +5,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import javafx.scene.effect.DropShadow;
@@ -20,10 +22,23 @@ public class ShobuMain extends Application {
     private Posicion inicioPasivo;
     private String tableroPasivoNombre;
     private int[] vectorActual;
+    private Label turnoNegro;
+    private Label turnoBlanco;
 
     @Override
     public void start(Stage stage) {
         juego = new Shobu();
+
+        VBox interfaz = new VBox(20);
+        interfaz.setAlignment(Pos.CENTER);
+        interfaz.setPadding(new Insets(20));
+
+        turnoNegro = new Label("JUGADOR NEGRO");
+        turnoBlanco = new Label("JUGADOR BLANCO");
+
+        turnoNegro.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        turnoBlanco.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
         contenedorPrincipal = new GridPane();
         contenedorPrincipal.setAlignment(Pos.CENTER);
         contenedorPrincipal.setPadding(new Insets(20));
@@ -35,9 +50,11 @@ public class ShobuMain extends Application {
         contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
         contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
 
+        interfaz.getChildren().addAll(turnoNegro, contenedorPrincipal, turnoBlanco);
+
         actualizarInterfaz();
 
-        Scene scene = new Scene(contenedorPrincipal, 800, 800);
+        Scene scene = new Scene(interfaz, 900, 850);
         stage.setTitle("Shobu");
         stage.setScene(scene);
         stage.setResizable(false);
@@ -105,6 +122,19 @@ public class ShobuMain extends Application {
                     matrizBotones[fila][columna].setGraphic(crearPiezaVisual(contenido));
                 }
             }
+        }
+
+        String turno = juego.getTurnoActual();
+        if (turno.equals("B")) {
+            turnoNegro.setText("TU TURNO, JUGADOR BLANCO");
+            turnoNegro.setTextFill(Color.DARKBLUE);
+            turnoBlanco.setText("JUGADOR NEGRO");
+            turnoBlanco.setTextFill(Color.GRAY);
+        } else {
+            turnoBlanco.setText("TU TURNO, JUGADOR NEGRO");
+            turnoBlanco.setTextFill(Color.DARKBLUE);
+            turnoNegro.setText("JUGADOR BLANCO");
+            turnoNegro.setTextFill(Color.GRAY);
         }
 
     }
