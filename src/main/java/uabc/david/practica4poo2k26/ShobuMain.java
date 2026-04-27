@@ -31,6 +31,8 @@ public class ShobuMain extends Application {
         contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
         contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
 
+        actualizarInterfaz();
+
         Scene scene = new Scene(contenedorPrincipal, 800, 800);
         stage.setTitle("Shobu");
         stage.setScene(scene);
@@ -39,8 +41,10 @@ public class ShobuMain extends Application {
 
     private GridPane crearVistaTablero(String nombreTablero) {
         GridPane grid = new GridPane();
-
         Tablero tablero = juego.getTablero(nombreTablero);
+
+        Button[][] matrizBotones = new Button[4][4];
+        botonesGui.put(nombreTablero, matrizBotones);
 
         String colorTablero = tablero.getColor().equals("BLANCO") ? "#f0d9b5" : "#b58863";
         grid.setStyle("-fx-background-color: " + colorTablero + "; -fx-padding: 10;");
@@ -53,6 +57,8 @@ public class ShobuMain extends Application {
                 final int fila = filas;
                 final int columna = columnas;
                 botonCasilla.setOnAction(e -> manejarClic(nombreTablero, fila, columna));
+
+                matrizBotones[filas][columnas] = botonCasilla;
 
                 grid.add(botonCasilla, columnas, filas);
             }

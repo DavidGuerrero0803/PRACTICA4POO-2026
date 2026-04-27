@@ -1,6 +1,5 @@
 package uabc.david.practica4poo2k26;
 
-// Esta clase me permitirá comparar si las posiciones son iguales
 public class Posicion {
     private int fila;
     private int columna;
@@ -26,7 +25,6 @@ public class Posicion {
         return  columna;
     }
 
-    // equals que tiene como función la búsqueda y comparación de posiciones
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
