@@ -10,7 +10,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -25,21 +24,25 @@ public class ShobuMain extends Application {
     private int[] vectorActual;
     private Label turnoNegro;
     private Label turnoBlanco;
+    private Label labelEstado;
 
     @Override
     public void start(Stage stage) {
         juego = new Shobu();
 
-        VBox interfaz = new VBox(20);
+        VBox interfaz = new VBox(5);
         interfaz.setAlignment(Pos.CENTER);
-        interfaz.setPadding(new Insets(10));
+
 
         Label titulo = new Label("Shobu");
-        titulo.setFont(Font.font("Arial", 60));
+        titulo.setFont(Font.font("Arial", 75));
         titulo.setTextFill(Color.BLACK);
 
         turnoNegro = new Label("JUGADOR NEGRO");
         turnoBlanco = new Label("JUGADOR BLANCO");
+
+        labelEstado = new Label("Inicia tu movimiento PASIVO");
+        labelEstado.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #d35400;");
 
         turnoNegro.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         turnoBlanco.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
@@ -55,7 +58,7 @@ public class ShobuMain extends Application {
         contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
         contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
 
-        interfaz.getChildren().addAll(titulo, turnoNegro, contenedorPrincipal, turnoBlanco);
+        interfaz.getChildren().addAll(titulo, turnoNegro, contenedorPrincipal, labelEstado, turnoBlanco);
 
         actualizarInterfaz();
 
@@ -64,6 +67,15 @@ public class ShobuMain extends Application {
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+    }
+
+    private void mostrarMensaje(String mensaje, boolean esError) {
+        labelEstado.setText(mensaje);
+        if (esError) {
+            labelEstado.setTextFill(Color.RED);
+        } else {
+            labelEstado.setTextFill(Color.DARKGREEN);
+        }
     }
 
     private GridPane crearVistaTablero(String nombreTablero) {
@@ -109,8 +121,6 @@ public class ShobuMain extends Application {
             pieza.setStroke(Color.GRAY);
         }
 
-        pieza.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
-
         return pieza;
     }
 
@@ -146,6 +156,7 @@ public class ShobuMain extends Application {
 
     private void manejarClic(String nombreTablero, int f, int c) {
         Posicion clicPos = new Posicion(f, c);
+        labelEstado.setTextFill(Color.DARKGRAY);
         Tablero tableroActual = juego.getTablero(nombreTablero);
 
         if (inicioPasivo == null) {
@@ -166,18 +177,22 @@ public class ShobuMain extends Application {
 
                     ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
                     iluminarCasillas(nombreTablero, legales);
+                    mostrarMensaje("Movimiento pasivo seleccionado. Elige el destino.", false);
                 } else {
-                    System.out.println("Tu movimiento pasivo solo puede hacerse en uno de tus tableros");
+                    mostrarMensaje("El movimiento PASIVO debe ser en tus tableros.", true);
                 }
+            } else {
+                mostrarMensaje("Pieza incorrecta/Casilla vacía.", true);
             }
         }
 
         else if (vectorActual == null) {
             if (juego.esPasivoValido(tableroActual, inicioPasivo, clicPos) && nombreTablero.equals(tableroPasivoNombre)) {
                 vectorActual = juego.obtenerVectorMovimiento(inicioPasivo, clicPos);
-
+                mostrarMensaje("Pasivo fijado. Ahora haz el movimiento AGRESIVO (Tablero de otro color).", false);
                 prepararSeleccionAgresiva();
             } else {
+                mostrarMensaje("Movimiento pasivo no válido. Intenta otra casilla.", true);
                 resetearSeleccion();
             }
         }
@@ -190,11 +205,13 @@ public class ShobuMain extends Application {
             if (!colorPasivo.equals(colorAgresivo)) {
                 if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
                     ejecutarTurnoCompleto(clicPos, nombreTablero);
-
+                    mostrarMensaje("Inicia tu movimiento PASIVO", false);
+                } else {
+                    mostrarMensaje("Movimiento NO permitido (Obstruido o fuera de límites).", true);
                 }
             } else {
-                System.out.println("Debes elegir una pieza en un tablero " +
-                        (colorPasivo.equals("blanco") ? "negro" : "blanco"));
+                String colorNecesario = (colorPasivo.equals("blanco") ? "negro" : "blanco");
+                mostrarMensaje("Debes atacar en un tablero de color " + colorNecesario, true);
             }
         }
     }
@@ -215,7 +232,7 @@ public class ShobuMain extends Application {
     }
 
     private void prepararSeleccionAgresiva() {
-        System.out.println("Se ha fijado el movimiento pasivo");
+        mostrarMensaje("Movimiento PASIVO fijado. Ahora elige el movimiento AGRESIVO.", false);
     }
 
     private void resetearSeleccion() {
