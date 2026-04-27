@@ -17,8 +17,8 @@ public class Shobu {
         // Clave: Posición del tablero, valor: Color del tablero.
         tableros.put("ARRIBA_IZQUIERDA", new Tablero("NEGRO"));
         tableros.put("ARRIBA_DERECHA", new Tablero("BLANCO"));
-        tableros.put("ABAJO_IZQUIERDA", new Tablero("BLANCO"));
-        tableros.put("ABAJO_DERECHA", new Tablero("NEGRO"));
+        tableros.put("ABAJO_IZQUIERDA", new Tablero("NEGRO"));
+        tableros.put("ABAJO_DERECHA", new Tablero("BLANCO"));
 
         for (int i = 0; i < 4; i++) {
             // N = negro.
