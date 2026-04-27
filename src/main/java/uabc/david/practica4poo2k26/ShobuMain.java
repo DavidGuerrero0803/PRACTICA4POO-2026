@@ -1,6 +1,7 @@
 package uabc.david.practica4poo2k26;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -25,7 +26,7 @@ public class ShobuMain extends Application {
         juego = new Shobu();
         contenedorPrincipal = new GridPane();
         contenedorPrincipal.setAlignment(Pos.CENTER);
-        contenedorPrincipal.setPadding(new javafx.geometry.Insets(20));
+        contenedorPrincipal.setPadding(new Insets(20));
         contenedorPrincipal.setHgap(20);
         contenedorPrincipal.setVgap(20);
 
@@ -56,6 +57,8 @@ public class ShobuMain extends Application {
         for (int filas = 0; filas < 4; filas++) {
             for (int columnas = 0; columnas < 4; columnas++) {
                 Button botonCasilla = new Button();
+
+                botonCasilla.setMinSize(60, 60);
                 botonCasilla.setPrefSize(60, 60);
 
                 final int fila = filas;
@@ -63,7 +66,9 @@ public class ShobuMain extends Application {
                 botonCasilla.setOnAction(e -> manejarClic(nombreTablero, fila, columna));
 
                 matrizBotones[filas][columnas] = botonCasilla;
-                botonCasilla.setStyle("-fx-background-color: rgba(255, 255, 255, 0.1);");
+
+
+
                 grid.add(botonCasilla, columnas, filas);
             }
         }
