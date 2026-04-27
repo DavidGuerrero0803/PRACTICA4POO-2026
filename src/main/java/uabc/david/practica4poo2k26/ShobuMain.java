@@ -68,9 +68,9 @@ public class ShobuMain extends Application {
         stage.show();
     }
 
-    private void mostrarMensaje(String mensaje, boolean esError) {
+    private void mostrarMensaje(String mensaje, boolean hayError) {
         labelEstado.setText(mensaje);
-        if (esError) {
+        if (hayError) {
             labelEstado.setTextFill(Color.RED);
         } else {
             labelEstado.setTextFill(Color.DARKGREEN);
@@ -179,7 +179,7 @@ public class ShobuMain extends Application {
 
                     ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
                     iluminarCasillas(nombreTablero, legales);
-                    mostrarMensaje("Movimiento pasivo seleccionado. Elige el destino.", false);
+                    mostrarMensaje("Movimiento pasivo seleccionado. Elige la casilla.", false);
                 } else {
                     mostrarMensaje("El movimiento PASIVO debe ser en tus tableros.", true);
                 }
@@ -191,10 +191,10 @@ public class ShobuMain extends Application {
         else if (vectorActual == null) {
             if (juego.esPasivoValido(tableroActual, inicioPasivo, clicPos) && nombreTablero.equals(tableroPasivoNombre)) {
                 vectorActual = juego.obtenerVectorMovimiento(inicioPasivo, clicPos);
-                mostrarMensaje("Pasivo fijado. Ahora haz el movimiento AGRESIVO (Tablero de otro color).", false);
+                mostrarMensaje("PASIVO fijado. Ahora haz el movimiento AGRESIVO.", false);
                 prepararSeleccionAgresiva();
             } else {
-                mostrarMensaje("Movimiento pasivo no válido. Intenta otra casilla.", true);
+                mostrarMensaje("Movimiento PASIVO no válido. Intenta en otra casilla.", true);
                 resetearSeleccion();
             }
         }
@@ -269,7 +269,7 @@ public class ShobuMain extends Application {
         } else {
             juego.cambiarTurno();
             actualizarInterfaz();
-            mostrarMensaje("Turno completado. Inicia movimiento PASIVO.", false);
+            mostrarMensaje("Turno completado. Inicia tu movimiento PASIVO.", false);
         }
     }
 
