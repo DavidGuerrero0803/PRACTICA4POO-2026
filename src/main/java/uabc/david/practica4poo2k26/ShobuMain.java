@@ -16,8 +16,13 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javafx.animation.PauseTransition;
+import static javafx.util.Duration.seconds;
+
 public class ShobuMain extends Application {
     private Shobu juego;
+    private Stage stagePrincipal;
+    private boolean contraMaquina = false;
     private GridPane contenedorPrincipal;
     private Posicion inicioPasivo;
     private String tableroPasivoNombre;
@@ -25,10 +30,48 @@ public class ShobuMain extends Application {
     private Label turnoNegro;
     private Label turnoBlanco;
     private Label labelEstado;
+    private HashMap<String, Button[][]> botonesGUI = new HashMap<>();
 
     @Override
     public void start(Stage stage) {
-        juego = new Shobu();
+        this.stagePrincipal = stage;
+        mostrarMenu();
+    }
+
+    private void mostrarMenu() {
+        VBox menu = new VBox(30);
+        menu.setAlignment(Pos.CENTER);
+        menu.setStyle("-fx-background-color: #2c3e50; -fx-padding: 50;");
+
+        Label titulo = new Label("Shobu");
+        titulo.setFont(Font.font(100));
+        titulo.setTextFill(Color.WHITE);
+
+        Label nombre = new Label("Práctica #4 - Mario David Guerrero Márquez");
+        nombre.setFont(Font.font("Arial", 15));
+        nombre.setTextFill(Color.WHITE);
+
+        String buttonStyle = "-fx-font-size: 18px; -fx-min-width: 250px; -fx-background-radius: 10;";
+
+        Button buttonPvP = new Button("Jugador vs Jugador");
+        buttonPvP.setStyle(buttonStyle);
+        buttonPvP.setOnAction(e -> iniciarEscenaJuego(false));
+
+        Button buttonPvE = new Button("Jugador vs Máquina");
+        buttonPvE.setStyle(buttonStyle);
+        buttonPvE.setOnAction(e -> iniciarEscenaJuego(true));
+
+        menu.getChildren().addAll(titulo, buttonPvP, buttonPvE, nombre);
+        Scene sceneMenu = new Scene(menu, 900, 850);
+        stagePrincipal.setScene(sceneMenu);
+        stagePrincipal.setTitle("Shobu");
+        stagePrincipal.show();
+    }
+
+    private void iniciarEscenaJuego(boolean modoMaquina) {
+        this.contraMaquina = modoMaquina;
+        this.juego = new Shobu();
+        this.botonesGUI.clear();
 
         VBox interfaz = new VBox(5);
         interfaz.setAlignment(Pos.CENTER);
@@ -61,11 +104,8 @@ public class ShobuMain extends Application {
 
         actualizarInterfaz();
 
-        Scene scene = new Scene(interfaz, 900, 850);
-        stage.setTitle("Shobu");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.show();
+        Scene sceneJuego = new Scene(interfaz, 900, 850);
+        stagePrincipal.setScene(sceneJuego);
     }
 
     private void mostrarMensaje(String mensaje, boolean hayError) {
@@ -82,7 +122,7 @@ public class ShobuMain extends Application {
         Tablero tablero = juego.getTablero(nombreTablero);
 
         Button[][] matrizBotones = new Button[4][4];
-        botonesGui.put(nombreTablero, matrizBotones);
+        botonesGUI.put(nombreTablero, matrizBotones);
 
         String colorTablero = tablero.getColor().equals("BLANCO") ? "#f0d9b5" : "#b58863";
         grid.setStyle("-fx-background-color: " + colorTablero + "; -fx-padding: 10;");
@@ -123,12 +163,10 @@ public class ShobuMain extends Application {
         return pieza;
     }
 
-    private HashMap<String, Button[][]> botonesGui = new HashMap<>();
-
     private void actualizarInterfaz() {
-        for (String nombreTablero : botonesGui.keySet()) {
+        for (String nombreTablero : botonesGUI.keySet()) {
             Tablero logicaTablero = juego.getTablero(nombreTablero);
-            Button[][] matrizBotones = botonesGui.get(nombreTablero);
+            Button[][] matrizBotones = botonesGUI.get(nombreTablero);
 
             for (int fila = 0; fila < 4; fila++) {
                 for (int columna = 0; columna < 4; columna++) {
@@ -147,7 +185,7 @@ public class ShobuMain extends Application {
             turnoNegro.setText("JUGADOR NEGRO");
             turnoNegro.setTextFill(Color.GRAY);
         } else {
-            turnoNegro.setText("-> TU TURNO, JUGADOR NEGRO)");
+            turnoNegro.setText("-> TU TURNO, JUGADOR NEGRO");
             turnoNegro.setTextFill(Color.DARKBLUE);
 
             turnoBlanco.setText("JUGADOR BLANCO");
@@ -224,7 +262,7 @@ public class ShobuMain extends Application {
     }
 
     private void iluminarCasillas(String nombreTablero, ArrayList<Posicion> destinos) {
-        Button[][] matriz = botonesGui.get(nombreTablero);
+        Button[][] matriz = botonesGUI.get(nombreTablero);
         for (Posicion pos : destinos) {
 
             matriz[pos.getFila()][pos.getColumna()].setStyle(
@@ -242,7 +280,7 @@ public class ShobuMain extends Application {
         tableroPasivoNombre = null;
         vectorActual = null;
 
-        for (Button[][] matriz : botonesGui.values()) {
+        for (Button[][] matriz : botonesGUI.values()) {
             for (int fila = 0; fila < 4; fila++) {
                 for (int columna = 0; columna < 4; columna++) {
                     matriz[fila][columna].setStyle("-fx-border-color: transparent;");
@@ -268,8 +306,67 @@ public class ShobuMain extends Application {
             contenedorPrincipal.setDisable(true);
         } else {
             juego.cambiarTurno();
+            resetearSeleccion();
             actualizarInterfaz();
-            mostrarMensaje("Turno completado. Inicia tu movimiento PASIVO.", false);
+            mostrarMensaje("Turno del Jugador " + (juego.getTurnoActual().equals("N") ? "NEGRO" : "BLANCO"), false);
+
+            if (contraMaquina && juego.getTurnoActual().equals("B")) {
+                PauseTransition delay = new PauseTransition(seconds(1.2));
+                delay.setOnFinished(e -> ejecutarTurnoMaquina());
+                delay.play();
+            }
+        }
+    }
+
+    private void ejecutarTurnoMaquina() {
+        if (juego.verificarGanador() != null) {
+            return;
+        }
+
+        String[] tablerosHomeMaquina = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA"};
+
+        for (String nombreTableroPasivo : tablerosHomeMaquina) {
+            Tablero tableroPasivo = juego.getTablero(nombreTableroPasivo);
+
+            for (int filaPasiva = 0; filaPasiva < 4; filaPasiva++) {
+                for (int columnaPasiva = 0; columnaPasiva < 4; columnaPasiva++) {
+                    Posicion posicionPasiva = new Posicion(filaPasiva, columnaPasiva);
+
+                    if (tableroPasivo.getPosicion(posicionPasiva).equals("B")) {
+                        ArrayList<Posicion> caminosPasivos = juego.obtenerMovimientosLegales(tableroPasivo, posicionPasiva);
+
+                        for (Posicion posCaminoPasivo : caminosPasivos) {
+                            int[] vector = juego.obtenerVectorMovimiento(posicionPasiva, posCaminoPasivo);
+
+                            String colorOpuesto = tableroPasivo.getColor().equals("BLANCO") ? "NEGRO" : "BLANCO";
+
+                            String[] todosLosTableros = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA", "ABAJO_IZQUIERDA", "ABAJO_DERECHA"};
+
+                            for (String nombreTableroAgresivo : todosLosTableros) {
+                                Tablero tableroAgresivo = juego.getTablero(nombreTableroAgresivo);
+
+                                if (tableroAgresivo.getColor().equals(colorOpuesto)) {
+
+                                    for (int filaAgresiva = 0; filaAgresiva < 4; filaAgresiva++) {
+                                        for (int columnaAgresiva = 0; columnaAgresiva < 4; columnaAgresiva++) {
+                                            Posicion posicionAgresiva = new Posicion(filaAgresiva, columnaAgresiva);
+                                            if (tableroAgresivo.getPosicion(posicionAgresiva).equals("B") &&
+                                                    juego.esAgresivoValido(tableroAgresivo, posicionAgresiva, vector)) {
+
+                                                this.inicioPasivo = posicionPasiva;
+                                                this.tableroPasivoNombre = nombreTableroPasivo;
+                                                this.vectorActual = vector;
+                                                ejecutarTurnoCompleto(posicionAgresiva, nombreTableroAgresivo);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
