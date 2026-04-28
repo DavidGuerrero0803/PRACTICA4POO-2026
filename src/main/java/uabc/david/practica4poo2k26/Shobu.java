@@ -7,22 +7,31 @@ public class Shobu {
     private HashMap<String, Tablero> tableros;
     private String turnoActual;
 
+    public static final String ARRIBA_IZQUIERDA = "ARRIBA_IZQUIERDA";
+    public static final String ARRIBA_DERECHA   = "ARRIBA_DERECHA";
+    public static final String ABAJO_IZQUIERDA  = "ABAJO_IZQUIERDA";
+    public static final String ABAJO_DERECHA    = "ABAJO_DERECHA";
+
+    private final String[] POSICIONES_TABLERO = {
+      ARRIBA_IZQUIERDA, ARRIBA_DERECHA, ABAJO_IZQUIERDA, ABAJO_DERECHA
+    };
+
     public Shobu() {
         this.tableros = new HashMap<>();
-        this.turnoActual = "N";
+        this.turnoActual = Tablero.NEGRA;
         prepararJuego();
     }
 
     private void prepararJuego() {
-        tableros.put("ARRIBA_IZQUIERDA", new Tablero("NEGRO"));
-        tableros.put("ARRIBA_DERECHA", new Tablero("BLANCO"));
-        tableros.put("ABAJO_IZQUIERDA", new Tablero("NEGRO"));
-        tableros.put("ABAJO_DERECHA", new Tablero("BLANCO"));
+        tableros.put(ARRIBA_IZQUIERDA, new Tablero(Tablero.COLOR_NEGRO));
+        tableros.put(ARRIBA_DERECHA, new Tablero(Tablero.COLOR_BLANCO));
+        tableros.put(ABAJO_IZQUIERDA, new Tablero(Tablero.COLOR_NEGRO));
+        tableros.put(ABAJO_DERECHA, new Tablero(Tablero.COLOR_BLANCO));
 
-        for (int i = 0; i < 4; i++) {
+        for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
             for (Tablero tablero : tableros.values()) {
-                tablero.setPosicion(new Posicion(0, i), "B");
-                tablero.setPosicion(new Posicion(3, i), "N");
+                tablero.setPosicion(new Posicion(0, columna), Tablero.BLANCA);
+                tablero.setPosicion(new Posicion(3, columna), Tablero.NEGRA);
             }
         }
     }
@@ -32,15 +41,14 @@ public class Shobu {
     }
 
     public void cambiarTurno() {
-        if (this.turnoActual.equals("N")) {
-            this.turnoActual = "B";
-        } else {
-            this.turnoActual = "N";
-        }
+        turnoActual = turnoActual.equals(Tablero.NEGRA) ? Tablero.BLANCA : Tablero.NEGRA;
     }
 
     public int[] obtenerVectorMovimiento(Posicion inicio, Posicion fin) {
-        return new int[] {fin.getFila() - inicio.getFila(), fin.getColumna() - inicio.getColumna()};
+        return new int[] {
+                fin.getFila() - inicio.getFila(),
+                fin.getColumna() - inicio.getColumna()
+        };
     }
 
     public ArrayList<Posicion> obtenerTrayectoria(Posicion inicio, int[] vector) {
