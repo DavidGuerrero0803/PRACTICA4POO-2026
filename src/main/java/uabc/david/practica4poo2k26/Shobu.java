@@ -12,7 +12,7 @@ public class Shobu {
     public static final String ABAJO_IZQUIERDA  = "ABAJO_IZQUIERDA";
     public static final String ABAJO_DERECHA    = "ABAJO_DERECHA";
 
-    private final String[] POSICIONES_TABLERO = {
+    public static final String[] POSICIONES_TABLERO = {
       ARRIBA_IZQUIERDA, ARRIBA_DERECHA, ABAJO_IZQUIERDA, ABAJO_DERECHA
     };
 
@@ -121,7 +121,7 @@ public class Shobu {
         }
 
         if (piedrasEnemigas == 1) {
-            validarEmpuje(tablero, destino, vector);
+            return validarEmpuje(tablero, destino, vector);
         }
 
         return true;
@@ -186,7 +186,7 @@ public class Shobu {
         Tablero tablero = tableros.get(nombreTablero);
         String piedra = tablero.getPosicion(inicio);
 
-        tablero.setPosicion(inicio, "V");
+        tablero.setPosicion(inicio, Tablero.VACÍA);
 
         Posicion destino = new Posicion(
                 inicio.getFila() + vector[0],
@@ -197,7 +197,7 @@ public class Shobu {
             aplicarEmpuje(tablero, destino, vector);
         }
 
-        tablero.setPosicion(inicio,  Tablero.VACÍA);
+        tablero.setPosicion(inicio, Tablero.VACÍA);
         tablero.setPosicion(destino, piedra);
     }
 

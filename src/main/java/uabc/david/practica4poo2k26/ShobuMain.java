@@ -24,12 +24,16 @@ public class ShobuMain extends Application {
     private Stage stagePrincipal;
     private boolean contraMaquina = false;
     private GridPane contenedorPrincipal;
+
     private Posicion inicioPasivo;
     private String tableroPasivoNombre;
     private int[] vectorActual;
+
     private Label turnoNegro;
     private Label turnoBlanco;
-    private Label labelEstado;
+    private Label estadoJuego;
+
+    private ArrayList<Posicion> destinosLegalesActuales = new ArrayList<>();
     private HashMap<String, Button[][]> botonesGUI = new HashMap<>();
 
     @Override
@@ -78,29 +82,19 @@ public class ShobuMain extends Application {
 
         Label titulo = new Label("Shobu");
         titulo.setFont(Font.font("Arial", 80));
-        titulo.setTextFill(Color.BLACK);
 
         turnoNegro = new Label("JUGADOR NEGRO");
         turnoBlanco = new Label("JUGADOR BLANCO");
 
-        labelEstado = new Label("Inicia tu movimiento PASIVO");
-        labelEstado.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #d35400;");
+        estadoJuego = new Label("Inicia tu movimiento PASIVO");
+        estadoJuego.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #d35400;");
 
         turnoNegro.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         turnoBlanco.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        contenedorPrincipal = new GridPane();
-        contenedorPrincipal.setAlignment(Pos.CENTER);
-        contenedorPrincipal.setPadding(new Insets(20));
-        contenedorPrincipal.setHgap(20);
-        contenedorPrincipal.setVgap(20);
+        contenedorPrincipal = crearTableros();
 
-        contenedorPrincipal.add(crearVistaTablero("ARRIBA_IZQUIERDA"), 0, 0);
-        contenedorPrincipal.add(crearVistaTablero("ARRIBA_DERECHA"), 1, 0);
-        contenedorPrincipal.add(crearVistaTablero("ABAJO_IZQUIERDA"), 0, 1);
-        contenedorPrincipal.add(crearVistaTablero("ABAJO_DERECHA"), 1, 1);
-
-        interfaz.getChildren().addAll(titulo, turnoBlanco, contenedorPrincipal, labelEstado, turnoNegro);
+        interfaz.getChildren().addAll(titulo, turnoBlanco, contenedorPrincipal, estadoJuego, turnoNegro);
 
         actualizarInterfaz();
 
@@ -108,77 +102,89 @@ public class ShobuMain extends Application {
         stagePrincipal.setScene(sceneJuego);
     }
 
-    private void mostrarMensaje(String mensaje, boolean hayError) {
-        labelEstado.setText(mensaje);
-        if (hayError) {
-            labelEstado.setTextFill(Color.RED);
-        } else {
-            labelEstado.setTextFill(Color.DARKGREEN);
-        }
+    private GridPane crearTableros() {
+        GridPane cuadricula = new GridPane();
+        cuadricula.setAlignment(Pos.CENTER);
+        cuadricula.setPadding(new Insets(20));
+        cuadricula.setHgap(20);
+        cuadricula.setVgap(20);
+
+        cuadricula.add(crearVistaTablero(Shobu.ARRIBA_IZQUIERDA), 0, 0);
+        cuadricula.add(crearVistaTablero(Shobu.ARRIBA_DERECHA), 1, 0);
+        cuadricula.add(crearVistaTablero(Shobu.ABAJO_IZQUIERDA), 0, 1);
+        cuadricula.add(crearVistaTablero(Shobu.ABAJO_DERECHA), 1, 1);
+
+        return cuadricula;
     }
 
     private GridPane crearVistaTablero(String nombreTablero) {
-        GridPane grid = new GridPane();
+        GridPane cuadricula = new GridPane();
         Tablero tablero = juego.getTablero(nombreTablero);
 
-        Button[][] matrizBotones = new Button[4][4];
+        String colorTablero = tablero.getColor().equals(Tablero.COLOR_BLANCO) ? "#f0d9b5" : "#b58863";
+        cuadricula.setStyle("-fx-background-color: " + colorTablero + "; -fx-padding: 10;");
+
+        Button[][] matrizBotones = new Button[Tablero.TAMAÑO][Tablero.TAMAÑO];
         botonesGUI.put(nombreTablero, matrizBotones);
 
-        String colorTablero = tablero.getColor().equals("BLANCO") ? "#f0d9b5" : "#b58863";
-        grid.setStyle("-fx-background-color: " + colorTablero + "; -fx-padding: 10;");
-
-        for (int filas = 0; filas < 4; filas++) {
-            for (int columnas = 0; columnas < 4; columnas++) {
+        for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+            for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
                 Button botonCasilla = new Button();
 
-                botonCasilla.setMinSize(60, 60);
                 botonCasilla.setPrefSize(60, 60);
 
-                final int fila = filas;
-                final int columna = columnas;
-                botonCasilla.setOnAction(e -> manejarClic(nombreTablero, fila, columna));
+                final int filas = fila;
+                final int columnas = columna;
+                botonCasilla.setOnAction(e -> manejarClic(nombreTablero, filas, columnas));
 
-                matrizBotones[filas][columnas] = botonCasilla;
-
-
-
-                grid.add(botonCasilla, columnas, filas);
+                matrizBotones[fila][columna] = botonCasilla;
+                cuadricula.add(botonCasilla, columna, fila);
             }
         }
-        return grid;
+
+        return cuadricula;
     }
 
-    private Circle crearPiezaVisual(String tipo) {
-        if (tipo.equals("V")) return null;
-
-        Circle pieza = new Circle(20);
-
-        if (tipo.equals("N")) {
-            pieza.setFill(Color.BLACK);
-        } else {
-            pieza.setFill(Color.WHITE);
-            pieza.setStroke(Color.GRAY);
+    private Circle crearPiedra(String tipo) {
+        if (tipo.equals(Tablero.VACÍA)) {
+            return null;
         }
 
-        return pieza;
+        Circle piedra = new Circle(20);
+
+        if (tipo.equals(Tablero.NEGRA)) {
+            piedra.setFill(Color.BLACK);
+        } else {
+            piedra.setFill(Color.WHITE);
+            piedra.setStroke(Color.GRAY);
+        }
+
+        return piedra;
     }
 
     private void actualizarInterfaz() {
-        for (String nombreTablero : botonesGUI.keySet()) {
-            Tablero logicaTablero = juego.getTablero(nombreTablero);
-            Button[][] matrizBotones = botonesGUI.get(nombreTablero);
+        actualizarTableros();
+        actualizarTurnos();
+    }
 
-            for (int fila = 0; fila < 4; fila++) {
-                for (int columna = 0; columna < 4; columna++) {
-                    String contenido = logicaTablero.getPosicion(new Posicion(fila, columna));
-                    matrizBotones[fila][columna].setGraphic(crearPiezaVisual(contenido));
+    private void actualizarTableros() {
+        for (String nombreTablero : botonesGUI.keySet()) {
+            Tablero tablero = juego.getTablero(nombreTablero);
+            Button[][] matriz = botonesGUI.get(nombreTablero);
+
+            for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+                for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
+                    String contenido = tablero.getPosicion(new Posicion(fila, columna));
+                    matriz[fila][columna].setGraphic(crearPiedra(contenido));
                 }
             }
         }
+    }
 
+    private void actualizarTurnos() {
         String turno = juego.getTurnoActual();
 
-        if (turno.equals("B")) {
+        if (turno.equals(Tablero.BLANCA)) {
             turnoBlanco.setText("-> TU TURNO, JUGADOR BLANCO");
             turnoBlanco.setTextFill(Color.DARKBLUE);
 
@@ -191,102 +197,73 @@ public class ShobuMain extends Application {
             turnoBlanco.setText("JUGADOR BLANCO");
             turnoBlanco.setTextFill(Color.GRAY);
         }
-
     }
 
     private void manejarClic(String nombreTablero, int fila, int columna) {
         Posicion clicPos = new Posicion(fila, columna);
-        labelEstado.setTextFill(Color.DARKGRAY);
         Tablero tableroActual = juego.getTablero(nombreTablero);
 
         if (inicioPasivo == null) {
-            if (esPiezaDelJugadorActual(tableroActual, clicPos)) {
-
-                boolean esMiHome = false;
-                String turno = juego.getTurnoActual();
-
-                if (turno.equals("B") && nombreTablero.startsWith("ARRIBA")) {
-                    esMiHome = true;
-                } else if (turno.equals("N") && nombreTablero.startsWith("ABAJO")) {
-                    esMiHome = true;
-                }
-
-                if (esMiHome) {
-                    inicioPasivo = clicPos;
-                    tableroPasivoNombre = nombreTablero;
-
-                    ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
-                    iluminarCasillas(nombreTablero, legales);
-                    mostrarMensaje("Movimiento pasivo seleccionado. Elige la casilla.", false);
-                } else {
-                    mostrarMensaje("El movimiento PASIVO debe ser en tus tableros.", true);
-                }
-            } else {
-                mostrarMensaje("Pieza incorrecta/Casilla vacía.", true);
-            }
-        }
-
-        else if (vectorActual == null) {
-            if (juego.esPasivoValido(tableroActual, inicioPasivo, clicPos) && nombreTablero.equals(tableroPasivoNombre)) {
-                vectorActual = juego.calcularVector(inicioPasivo, clicPos);
-                mostrarMensaje("PASIVO fijado. Ahora haz el movimiento AGRESIVO.", false);
-                prepararSeleccionAgresiva();
-            } else {
-                mostrarMensaje("Movimiento PASIVO no válido. Intenta en otra casilla.", true);
-                resetearSeleccion();
-            }
-        }
-
-        else {
-            Tablero tableroPasivo = juego.getTablero(tableroPasivoNombre);
-            String colorPasivo = tableroPasivo.getColor();
-            String colorAgresivo = tableroActual.getColor();
-
-            if (!colorPasivo.equals(colorAgresivo)) {
-                if (juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
-                    ejecutarTurnoCompleto(clicPos, nombreTablero);
-
-                } else {
-                    mostrarMensaje("Movimiento NO permitido (Obstruido o fuera de límites).", true);
-                }
-            } else {
-                String colorNecesario = (colorPasivo.equals("blanco") ? "negro" : "blanco");
-                mostrarMensaje("Debes atacar en un tablero de color " + colorNecesario, true);
-            }
+            intentarSeleccionarPasivo(nombreTablero, clicPos, tableroActual);
+        } else if (vectorActual == null) {
+            intentarConfirmarPasivo(nombreTablero, clicPos);
+        } else {
+            intentarEjecutarAgresivo(nombreTablero, clicPos, tableroActual);
         }
     }
 
-    private boolean esPiezaDelJugadorActual(Tablero tablero, Posicion pos) {
-        String contenido = tablero.getPosicion(pos);
-        return contenido.equals(juego.getTurnoActual());
-    }
-
-    private void iluminarCasillas(String nombreTablero, ArrayList<Posicion> destinos) {
-        Button[][] matriz = botonesGUI.get(nombreTablero);
-        for (Posicion pos : destinos) {
-
-            matriz[pos.getFila()][pos.getColumna()].setStyle(
-                    "-fx-border-color: #00ff00; -fx-border-width: 3; -fx-border-radius: 5;"
-            );
+    private void intentarSeleccionarPasivo(String nombreTablero, Posicion clicPos, Tablero tableroActual) {
+        if (!esPiedraDeJugadorActual(tableroActual, clicPos)) {
+            mostrarMensaje("Pieza incorrecta o casilla vacía.", true);
+            return;
         }
-    }
 
-    private void prepararSeleccionAgresiva() {
-        mostrarMensaje("Movimiento PASIVO fijado. Ahora elige el movimiento AGRESIVO.", false);
-    }
-
-    private void resetearSeleccion() {
-        inicioPasivo = null;
-        tableroPasivoNombre = null;
-        vectorActual = null;
-
-        for (Button[][] matriz : botonesGUI.values()) {
-            for (int fila = 0; fila < 4; fila++) {
-                for (int columna = 0; columna < 4; columna++) {
-                    matriz[fila][columna].setStyle("-fx-border-color: transparent;");
-                }
-            }
+        if (!esTableroHomeDelJugador(nombreTablero)) {
+            mostrarMensaje("El movimiento PASIVO debe ser en tus tableros.", true);
+            return;
         }
+
+        inicioPasivo = clicPos;
+        tableroPasivoNombre = nombreTablero;
+
+        ArrayList<Posicion> legales = juego.obtenerMovimientosLegales(tableroActual, inicioPasivo);
+        destinosLegalesActuales = legales;
+        iluminarCasillas(nombreTablero, legales);
+        mostrarMensaje("Movimiento PASIVO seleccionado. Elige la casilla.", false);
+    }
+
+    private void intentarConfirmarPasivo(String nombreTablero, Posicion clicPos) {
+        if (!nombreTablero.equals(tableroPasivoNombre) ||
+                !destinosLegalesActuales.contains(clicPos)) {
+            mostrarMensaje("Movimiento PASIVO no válido. Elige una casilla válida.", true);
+            resetearSeleccion();
+            return;
+        }
+
+        vectorActual = juego.calcularVector(inicioPasivo, clicPos);
+        mostrarMensaje("PASIVO fijado. Ahora haz el movimiento AGRESIVO.", false);
+    }
+
+    private void intentarEjecutarAgresivo(String nombreTablero, Posicion clicPos, Tablero tableroActual) {
+        Tablero tableroPasivo = juego.getTablero(tableroPasivoNombre);
+
+        if (tableroPasivo.getColor().equals(tableroActual.getColor())) {
+            String colorNecesario = tableroPasivo.getColorOpuesto().toLowerCase();
+            mostrarMensaje("Debes atacar en un tablero de color " + colorNecesario + ".", true);
+            return;
+        }
+
+        if (!esPiedraDeJugadorActual(tableroActual, clicPos)) {
+            mostrarMensaje("Debes seleccionar una de tus piezas para el movimiento AGRESIVO.", true);
+            return;
+        }
+
+        if (!juego.esAgresivoValido(tableroActual, clicPos, vectorActual)) {
+            mostrarMensaje("Movimiento no permitido (obstruido o fuera de rango).", true);
+            return;
+        }
+
+        ejecutarTurnoCompleto(clicPos, nombreTablero);
     }
 
     private void ejecutarTurnoCompleto(Posicion inicioAgresivo, String nombreTabAgresivo) {
@@ -299,18 +276,14 @@ public class ShobuMain extends Application {
         String ganador = juego.verificarGanador();
 
         if (ganador != null) {
-            String colorGanador = ganador.equals("N") ? "NEGRO" : "BLANCO";
-            labelEstado.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
-            mostrarMensaje("HA GANADO EL JUGADOR " + colorGanador, false);
-
-            contenedorPrincipal.setDisable(true);
+            mostrarVictoria(ganador);
         } else {
             juego.cambiarTurno();
-            resetearSeleccion();
             actualizarInterfaz();
-            mostrarMensaje("Turno del Jugador " + (juego.getTurnoActual().equals("N") ? "NEGRO" : "BLANCO"), false);
+            mostrarMensaje("Turno del Jugador " + (juego.getTurnoActual().
+                    equals(Tablero.NEGRA) ? Tablero.COLOR_NEGRO : Tablero.COLOR_BLANCO), false);
 
-            if (contraMaquina && juego.getTurnoActual().equals("B")) {
+            if (contraMaquina && juego.getTurnoActual().equals(Tablero.BLANCA)) {
                 PauseTransition delay = new PauseTransition(seconds(1.2));
                 delay.setOnFinished(e -> ejecutarTurnoMaquina());
                 delay.play();
@@ -318,55 +291,110 @@ public class ShobuMain extends Application {
         }
     }
 
+    private void mostrarVictoria(String ganador) {
+        String colorGanador = ganador.equals(Tablero.NEGRA) ? Tablero.COLOR_NEGRO : Tablero.COLOR_BLANCO;
+        estadoJuego.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        mostrarMensaje("HA GANADO EL JUGADOR " + colorGanador, false);
+        contenedorPrincipal.setDisable(true);
+    }
+
     private void ejecutarTurnoMaquina() {
         if (juego.verificarGanador() != null) {
             return;
         }
 
-        String[] tablerosHomeMaquina = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA"};
+        String[] tablerosHomeMaquina = { Shobu.ARRIBA_IZQUIERDA, Shobu.ARRIBA_DERECHA };
 
-        for (String nombreTableroPasivo : tablerosHomeMaquina) {
-            Tablero tableroPasivo = juego.getTablero(nombreTableroPasivo);
+        for (String nombreTabPasivo : tablerosHomeMaquina) {
+            Tablero tabPasivo = juego.getTablero(nombreTabPasivo);
 
-            for (int filaPasiva = 0; filaPasiva < 4; filaPasiva++) {
-                for (int columnaPasiva = 0; columnaPasiva < 4; columnaPasiva++) {
-                    Posicion posicionPasiva = new Posicion(filaPasiva, columnaPasiva);
+            for (int filaPasiva = 0; filaPasiva < Tablero.TAMAÑO; filaPasiva++) {
+                for (int columnaPasiva = 0; columnaPasiva < Tablero.TAMAÑO; columnaPasiva++) {
+                    Posicion posPasiva = new Posicion(filaPasiva, columnaPasiva);
+                    if (!tabPasivo.getPosicion(posPasiva).equals(Tablero.BLANCA)) {
+                        continue;
+                    }
 
-                    if (tableroPasivo.getPosicion(posicionPasiva).equals("B")) {
-                        ArrayList<Posicion> caminosPasivos = juego.obtenerMovimientosLegales(tableroPasivo, posicionPasiva);
+                    if (intentarJugadaMaquina(nombreTabPasivo, tabPasivo, posPasiva)) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
-                        for (Posicion posCaminoPasivo : caminosPasivos) {
-                            int[] vector = juego.calcularVector(posicionPasiva, posCaminoPasivo);
+    private boolean intentarJugadaMaquina(String nombreTabPasivo, Tablero tabPasivo, Posicion posPasiva) {
+        String colorOpuesto = tabPasivo.getColorOpuesto();
 
-                            String colorOpuesto = tableroPasivo.getColor().equals("BLANCO") ? "NEGRO" : "BLANCO";
+        for (Posicion destPasivo : juego.obtenerMovimientosLegales(tabPasivo, posPasiva)) {
+            int[] vector = juego.calcularVector(posPasiva, destPasivo);
 
-                            String[] todosLosTableros = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA", "ABAJO_IZQUIERDA", "ABAJO_DERECHA"};
+            for (String nombreTabAgresivo : Shobu.POSICIONES_TABLERO) {
+                Tablero tabAgresivo = juego.getTablero(nombreTabAgresivo);
+                if (!tabAgresivo.getColor().equals(colorOpuesto)) continue;
 
-                            for (String nombreTableroAgresivo : todosLosTableros) {
-                                Tablero tableroAgresivo = juego.getTablero(nombreTableroAgresivo);
+                for (int filaAgresiva = 0; filaAgresiva < Tablero.TAMAÑO; filaAgresiva++) {
+                    for (int columnaAgresiva = 0; columnaAgresiva < Tablero.TAMAÑO; columnaAgresiva++) {
+                        Posicion posAgresiva = new Posicion(filaAgresiva, columnaAgresiva);
 
-                                if (tableroAgresivo.getColor().equals(colorOpuesto)) {
+                        if (tabAgresivo.getPosicion(posAgresiva).equals(Tablero.BLANCA) &&
+                                juego.esAgresivoValido(tabAgresivo, posAgresiva, vector)) {
 
-                                    for (int filaAgresiva = 0; filaAgresiva < 4; filaAgresiva++) {
-                                        for (int columnaAgresiva = 0; columnaAgresiva < 4; columnaAgresiva++) {
-                                            Posicion posicionAgresiva = new Posicion(filaAgresiva, columnaAgresiva);
-                                            if (tableroAgresivo.getPosicion(posicionAgresiva).equals("B") &&
-                                                    juego.esAgresivoValido(tableroAgresivo, posicionAgresiva, vector)) {
-
-                                                this.inicioPasivo = posicionPasiva;
-                                                this.tableroPasivoNombre = nombreTableroPasivo;
-                                                this.vectorActual = vector;
-                                                ejecutarTurnoCompleto(posicionAgresiva, nombreTableroAgresivo);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            this.inicioPasivo = posPasiva;
+                            this.tableroPasivoNombre = nombreTabPasivo;
+                            this.vectorActual = vector;
+                            ejecutarTurnoCompleto(posAgresiva, nombreTabAgresivo);
+                            return true;
                         }
                     }
                 }
             }
+        }
+
+        return false;
+    }
+
+    private boolean esPiedraDeJugadorActual(Tablero tablero, Posicion pos) {
+        String contenido = tablero.getPosicion(pos);
+        return contenido.equals(juego.getTurnoActual());
+    }
+
+    private boolean esTableroHomeDelJugador(String nombreTablero) {
+        String turno = juego.getTurnoActual();
+        return (turno.equals(Tablero.BLANCA) && nombreTablero.startsWith("ARRIBA")) ||
+                (turno.equals(Tablero.NEGRA)  && nombreTablero.startsWith("ABAJO"));
+    }
+
+    private void iluminarCasillas(String nombreTablero, ArrayList<Posicion> destinos) {
+        Button[][] matriz = botonesGUI.get(nombreTablero);
+        for (Posicion pos : destinos) {
+            matriz[pos.getFila()][pos.getColumna()].setStyle(
+                    "-fx-border-color: #00ff00; -fx-border-width: 3; -fx-border-radius: 5;"
+            );
+        }
+    }
+
+    private void resetearSeleccion() {
+        inicioPasivo = null;
+        tableroPasivoNombre = null;
+        vectorActual = null;
+        destinosLegalesActuales.clear();
+
+        for (Button[][] matriz : botonesGUI.values()) {
+            for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+                for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
+                    matriz[fila][columna].setStyle("-fx-border-color: transparent;");
+                }
+            }
+        }
+    }
+
+    private void mostrarMensaje(String mensaje, boolean hayError) {
+        estadoJuego.setText(mensaje);
+        if (hayError) {
+            estadoJuego.setTextFill(Color.RED);
+        } else {
+            estadoJuego.setTextFill(Color.DARKGREEN);
         }
     }
 
