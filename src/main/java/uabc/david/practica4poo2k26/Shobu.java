@@ -143,37 +143,36 @@ public class Shobu {
     public ArrayList<Posicion> obtenerMovimientosLegales(Tablero tableroPasivo, Posicion inicio) {
         ArrayList<Posicion> destinosValidos = new ArrayList<>();
 
-        for (int fila = 0; fila < 4; fila++) {
-            for (int columma = 0; columma < 4; columma++) {
-                Posicion destinoCandidato = new Posicion(fila, columma);
+        for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+            for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
+                Posicion candidato = new Posicion(fila, columna);
 
-                if (esPasivoValido(tableroPasivo, inicio, destinoCandidato)) {
-                    int[] vector = calcularVector(inicio, destinoCandidato);
+                if (esPasivoValido(tableroPasivo, inicio, candidato)) {
+                    int[] vector = calcularVector(inicio, candidato);
 
                     if (hayEspejoValido(tableroPasivo, vector)) {
-                        destinosValidos.add(destinoCandidato);
+                        destinosValidos.add(candidato);
                     }
                 }
             }
         }
+
         return destinosValidos;
     }
 
     private boolean hayEspejoValido(Tablero tableroPasivo, int[] vector) {
-        String colorOpuesto = tableroPasivo.getColor().equals("BLANCO") ? "NEGRO" : "BLANCO";
+        String colorOpuesto = tableroPasivo.getColorOpuesto();
 
         for (Tablero tablero : tableros.values()) {
             if (tablero.getColor().equals(colorOpuesto)) {
 
-                for (int fila = 0; fila < 4; fila++) {
-                    for (int columna = 0; columna < 4; columna++) {
-                        Posicion posicionPieza = new Posicion(fila, columna);
+                for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+                    for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
+                        Posicion posicion = new Posicion(fila, columna);
 
-                        if (tablero.getPosicion(posicionPieza).equals(this.turnoActual)) {
-                            if (esAgresivoValido(tablero, posicionPieza, vector)) {
-
-                                return true;
-                            }
+                        if (tablero.getPosicion(posicion).equals(turnoActual) &&
+                                esAgresivoValido(tablero, posicion, vector)) {
+                            return true;
                         }
                     }
                 }
@@ -185,60 +184,62 @@ public class Shobu {
 
     public void moverPieza(String nombreTablero, Posicion inicio, int[] vector) {
         Tablero tablero = tableros.get(nombreTablero);
-        String pieza = tablero.getPosicion(inicio);
+        String piedra = tablero.getPosicion(inicio);
 
         tablero.setPosicion(inicio, "V");
 
-        Posicion destino = new Posicion(inicio.getFila() + vector[0],
-                inicio.getColumna() + vector[1]);
+        Posicion destino = new Posicion(
+                inicio.getFila() + vector[0],
+                inicio.getColumna() + vector[1]
+        );
 
-        if (!tablero.getPosicion(destino).equals("V") && !tablero.getPosicion(destino).equals(pieza)) {
-            aplicarEmpujeLogico(tablero, destino, vector);
+        if (!tablero.estaVacia(destino) && !tablero.getPosicion(destino).equals(piedra)) {
+            aplicarEmpuje(tablero, destino, vector);
         }
 
-        tablero.setPosicion(destino, pieza);
+        tablero.setPosicion(inicio,  Tablero.VACÍA);
+        tablero.setPosicion(destino, piedra);
     }
 
-    private void aplicarEmpujeLogico(Tablero tablero, Posicion posEnemigo, int[] vector) {
-        int pasoFila = (int) Math.signum(vector[0]);
-        int pasoColumna = (int) Math.signum(vector[1]);
+    private void aplicarEmpuje(Tablero tablero, Posicion posEnemigo, int[] vector) {
+        String piedraEmpujada = tablero.getPosicion(posEnemigo);
 
-        int nuevaFila = posEnemigo.getFila() + pasoFila;
-        int nuevaCol = posEnemigo.getColumna() + pasoColumna;
+        Posicion destinoEnemigo = new Posicion(
+                posEnemigo.getFila() + (int) Math.signum(vector[0]),
+                posEnemigo.getColumna() + (int) Math.signum(vector[1])
+        );
 
-        if (nuevaFila < 0 || nuevaFila > 3 || nuevaCol < 0 || nuevaCol > 3) {
+        tablero.setPosicion(posEnemigo, Tablero.VACÍA);
 
-        } else {
-
-            tablero.setPosicion(new Posicion(nuevaFila, nuevaCol), tablero.getPosicion(posEnemigo));
+        if (destinoEnemigo.estaEnRango()) {
+            tablero.setPosicion(destinoEnemigo, piedraEmpujada);
         }
+
     }
 
     public String verificarGanador() {
-        String[] posicionesTableros = {"ARRIBA_IZQUIERDA", "ARRIBA_DERECHA", "ABAJO_IZQUIERDA", "ABAJO_DERECHA"};
-
-        for (String nombre : posicionesTableros) {
+        for (String nombre : POSICIONES_TABLERO) {
             Tablero tablero = tableros.get(nombre);
             int negras = 0;
             int blancas = 0;
 
-            for (int fila = 0; fila < 4; fila++) {
-                for (int columna = 0; columna < 4; columna++) {
-                    String posiciones = tablero.getPosicion(new Posicion(fila, columna));
-                    if (posiciones.equals("N")) {
+            for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
+                for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
+                    String valorCelda = tablero.getPosicion(new Posicion(fila, columna));
+                    if (valorCelda.equals(Tablero.NEGRA)) {
                         negras++;
                     }
-                    if (posiciones.equals("B")) {
+                    if (valorCelda.equals(Tablero.BLANCA)) {
                         blancas++;
                     }
                 }
             }
 
             if (negras == 0) {
-                return "B";
+                return Tablero.BLANCA;
             }
             if (blancas == 0) {
-                return "N";
+                return Tablero.NEGRA;
             }
         }
 
