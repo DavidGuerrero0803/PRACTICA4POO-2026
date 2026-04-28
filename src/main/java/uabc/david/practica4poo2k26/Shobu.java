@@ -44,7 +44,7 @@ public class Shobu {
         turnoActual = turnoActual.equals(Tablero.NEGRA) ? Tablero.BLANCA : Tablero.NEGRA;
     }
 
-    public int[] obtenerVectorMovimiento(Posicion inicio, Posicion fin) {
+    public int[] calcularVector(Posicion inicio, Posicion fin) {
         return new int[] {
                 fin.getFila() - inicio.getFila(),
                 fin.getColumna() - inicio.getColumna()
@@ -54,38 +54,22 @@ public class Shobu {
     public ArrayList<Posicion> obtenerTrayectoria(Posicion inicio, int[] vector) {
         ArrayList<Posicion> pasos = new ArrayList<>();
 
-        int cambioFila = vector[0];
-        int cambioColumna = vector[1];
+        int pasoFila    = (int) Math.signum(vector[0]);
+        int pasoColumna = (int) Math.signum(vector[1]);
+        int distancia   = Math.max(Math.abs(vector[0]), Math.abs(vector[1]));
 
-        int pasoFila = 0;
-        int pasoColumna = 0;
-
-        if (cambioFila > 0) {
-            pasoFila = 1;
-        } else if (cambioFila < 0) {
-            pasoFila = -1;
-        }
-
-        if (cambioColumna > 0) {
-            pasoColumna = 1;
-        } else if (cambioColumna < 0) {
-            pasoColumna = -1;
-        }
-
-        int distanciaTotal = Math.max(Math.abs(cambioFila), Math.abs(cambioColumna));
-
-        for (int i = 1; i <= distanciaTotal; i++) {
-            int nuevaFila = inicio.getFila() + (pasoFila * i);
-            int nuevaColumna = inicio.getColumna() + (pasoColumna * i);
-
-            pasos.add(new Posicion(nuevaFila, nuevaColumna));
+        for (int i = 1; i <= distancia; i++) {
+            pasos.add(new Posicion(
+                    inicio.getFila() + pasoFila * i,
+                    inicio.getColumna() + pasoColumna * i
+            ));
         }
 
         return pasos;
     }
 
     public boolean esPasivoValido(Tablero tablero, Posicion inicio, Posicion fin) {
-        int[] vector = obtenerVectorMovimiento(inicio, fin);
+        int[] vector = calcularVector(inicio, fin);
         int distanciaFila = Math.abs(vector[0]);
         int distanciaColumna = Math.abs(vector[1]);
 
@@ -97,10 +81,8 @@ public class Shobu {
             return false;
         }
 
-        ArrayList<Posicion> trayectoria = obtenerTrayectoria(inicio, vector);
-
-        for (Posicion posicion : trayectoria) {
-            if (!tablero.getPosicion(posicion).equals("V")) {
+        for (Posicion paso : obtenerTrayectoria(inicio, vector)) {
+            if (!tablero.estaVacia(paso)) {
                 return false;
             }
         }
@@ -110,63 +92,52 @@ public class Shobu {
 
     public boolean esAgresivoValido(Tablero tablero, Posicion inicio, int[] vector) {
         ArrayList<Posicion> trayectoria = obtenerTrayectoria(inicio, vector);
-        Posicion destinoFinal = trayectoria.get(trayectoria.size() - 1);
+        Posicion destino = trayectoria.get(trayectoria.size() - 1);
 
-        if (estaFueraDeRango(destinoFinal)) {
+        if (!destino.estaEnRango()) {
             return false;
         }
 
-        int piezasEnemigasEnCamino = 0;
+        int piedrasEnemigas = 0;
 
-        for (Posicion posicion : trayectoria) {
-            String contenido = tablero.getPosicion(posicion);
+        for (Posicion paso : trayectoria) {
+            String contenido = tablero.getPosicion(paso);
 
-            if (contenido.equals(this.turnoActual)) {
+            if (contenido.equals(turnoActual)) {
                 return false;
             }
 
-            if (!contenido.equals("V") && !contenido.equals(this.turnoActual)) {
-                piezasEnemigasEnCamino++;
+            if (!tablero.estaVacia(paso)) {
+                piedrasEnemigas++;
 
-                if (!posicion.equals(destinoFinal)) {
+                if (!paso.equals(destino)) {
                     return false;
                 }
             }
         }
 
-        if (piezasEnemigasEnCamino > 1) {
+        if (piedrasEnemigas > 1) {
             return false;
         }
 
-        if (piezasEnemigasEnCamino == 1) {
-            return validarEmpuje(tablero, destinoFinal, vector);
+        if (piedrasEnemigas == 1) {
+            validarEmpuje(tablero, destino, vector);
         }
 
         return true;
     }
 
-    private boolean estaFueraDeRango(Posicion posicion) {
-        return posicion.getFila() < 0 || posicion.getFila() > 3 || posicion.getColumna() < 0 || posicion.getColumna() > 3;
-    }
-
     private boolean validarEmpuje(Tablero tablero, Posicion posEnemiga, int[] vector) {
-        int pasoFila = (int) Math.signum(vector[0]);
-        int pasoColumna = (int) Math.signum(vector[1]);
+        Posicion destinoEnemigo = new Posicion(
+                posEnemiga.getFila() + (int) Math.signum(vector[0]),
+                posEnemiga.getColumna() + (int) Math.signum(vector[1])
+        );
 
-        int filaDestinoEnemigo = posEnemiga.getFila() + pasoFila;
-        int colDestinoEnemigo = posEnemiga.getColumna() + pasoColumna;
-
-        if (filaDestinoEnemigo < 0 || filaDestinoEnemigo > 3 ||
-                colDestinoEnemigo < 0 || colDestinoEnemigo > 3) {
+        if (!destinoEnemigo.estaEnRango()){
             return true;
         }
 
-        Posicion destinoEnemigo = new Posicion(filaDestinoEnemigo, colDestinoEnemigo);
-        if (tablero.getPosicion(destinoEnemigo).equals("V")) {
-            return true;
-        }
-
-        return false;
+        return tablero.estaVacia(destinoEnemigo);
     }
 
     public ArrayList<Posicion> obtenerMovimientosLegales(Tablero tableroPasivo, Posicion inicio) {
@@ -177,7 +148,7 @@ public class Shobu {
                 Posicion destinoCandidato = new Posicion(fila, columma);
 
                 if (esPasivoValido(tableroPasivo, inicio, destinoCandidato)) {
-                    int[] vector = obtenerVectorMovimiento(inicio, destinoCandidato);
+                    int[] vector = calcularVector(inicio, destinoCandidato);
 
                     if (hayEspejoValido(tableroPasivo, vector)) {
                         destinosValidos.add(destinoCandidato);

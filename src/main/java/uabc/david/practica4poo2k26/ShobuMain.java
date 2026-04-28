@@ -228,7 +228,7 @@ public class ShobuMain extends Application {
 
         else if (vectorActual == null) {
             if (juego.esPasivoValido(tableroActual, inicioPasivo, clicPos) && nombreTablero.equals(tableroPasivoNombre)) {
-                vectorActual = juego.obtenerVectorMovimiento(inicioPasivo, clicPos);
+                vectorActual = juego.calcularVector(inicioPasivo, clicPos);
                 mostrarMensaje("PASIVO fijado. Ahora haz el movimiento AGRESIVO.", false);
                 prepararSeleccionAgresiva();
             } else {
@@ -336,7 +336,7 @@ public class ShobuMain extends Application {
                         ArrayList<Posicion> caminosPasivos = juego.obtenerMovimientosLegales(tableroPasivo, posicionPasiva);
 
                         for (Posicion posCaminoPasivo : caminosPasivos) {
-                            int[] vector = juego.obtenerVectorMovimiento(posicionPasiva, posCaminoPasivo);
+                            int[] vector = juego.calcularVector(posicionPasiva, posCaminoPasivo);
 
                             String colorOpuesto = tableroPasivo.getColor().equals("BLANCO") ? "NEGRO" : "BLANCO";
 
