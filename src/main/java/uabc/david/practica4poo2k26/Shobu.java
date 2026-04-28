@@ -14,7 +14,6 @@ public class Shobu {
     }
 
     private void prepararJuego() {
-        // Clave: Posición del tablero, valor: Color del tablero.
         tableros.put("ARRIBA_IZQUIERDA", new Tablero("NEGRO"));
         tableros.put("ARRIBA_DERECHA", new Tablero("BLANCO"));
         tableros.put("ABAJO_IZQUIERDA", new Tablero("NEGRO"));

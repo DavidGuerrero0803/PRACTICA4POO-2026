@@ -13,7 +13,6 @@ public class Tablero {
         for (int i = 0; i < 4; i++) {
             ArrayList<String> fila = new ArrayList<>();
             for (int j = 0; j < 4; j++) {
-                // V = vacío.
                 fila.add("V");
             }
             this.cuadricula.add(fila);

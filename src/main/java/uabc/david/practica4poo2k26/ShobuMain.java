@@ -194,8 +194,8 @@ public class ShobuMain extends Application {
 
     }
 
-    private void manejarClic(String nombreTablero, int f, int c) {
-        Posicion clicPos = new Posicion(f, c);
+    private void manejarClic(String nombreTablero, int fila, int columna) {
+        Posicion clicPos = new Posicion(fila, columna);
         labelEstado.setTextFill(Color.DARKGRAY);
         Tablero tableroActual = juego.getTablero(nombreTablero);
 
