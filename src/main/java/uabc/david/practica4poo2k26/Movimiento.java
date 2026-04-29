@@ -22,4 +22,32 @@ public class Movimiento {
     public Posicion getDestino() {
         return destino;
     }
+
+    public int getDeltaFila() {
+        int diferencia = destino.getFila() - origen.getFila();
+        if (diferencia > 0) {
+            return 1;
+        }
+        if (diferencia < 0) {
+            return -1;
+        }
+        return 0;
+    }
+
+    public int getDeltaColumna() {
+        int diferencia = destino.getColumna() - origen.getColumna();
+        if (diferencia > 0) {
+            return 1;
+        }
+        if (diferencia < 0) {
+            return -1;
+        }
+        return 0;
+    }
+
+    public int getDistancia() {
+        int diferenciaFila = Math.abs(destino.getFila() - origen.getFila());
+        int diferenciaColumna = Math.abs(destino.getColumna() - origen.getColumna());
+        return Math.max(diferenciaFila, diferenciaColumna);
+    }
 }
