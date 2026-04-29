@@ -1,6 +1,5 @@
 package uabc.david.practica4poo2k26;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Tablero {
@@ -16,14 +15,8 @@ public class Tablero {
         this.piedras = new HashMap<>();
     }
 
-    private void inicializarCuadricula() {
-        for (int i = 0; i < TAMAÑO; i++) {
-            ArrayList<String> fila = new ArrayList<>();
-            for (int j = 0; j < TAMAÑO; j++) {
-                fila.add(VACÍA);
-            }
-            this.cuadricula.add(fila);
-        }
+    public int getIndice() {
+        return indice;
     }
 
     public String getColor() {
@@ -34,20 +27,25 @@ public class Tablero {
         return propietario;
     }
 
-    public String getColorOpuesto() {
-        return colorTablero.equals(COLOR_BLANCO) ? COLOR_NEGRO : COLOR_BLANCO;
+    public HashMap<Posicion, Piedra> getPiedras() {
+        return piedras;
     }
 
-    public String getPosicion(Posicion posicion) {
-        return cuadricula.get(posicion.getFila()).get(posicion.getColumna());
+    public Piedra getPiedraEnPosicion(Posicion posicion) {
+        return piedras.get(posicion);
     }
 
-    public void setPosicion(Posicion posicion, String piedra) {
-        cuadricula.get(posicion.getFila()).set(posicion.getColumna(), piedra);
+    public void agregarPiedra(Piedra piedra) {
+        piedras.put(piedra.getPosicion(), piedra);
     }
 
-    public boolean estaVacia(Posicion posicion) {
-        return getPosicion(posicion).equals(VACÍA);
+    public void eliminarPiedra(Piedra piedra) {
+        piedras.remove(piedra.getPosicion());
+    }
+
+    public void actualizarPosicionPiedra(Posicion anterior, Posicion nueva, Piedra piedra) {
+        piedras.remove(anterior);
+        piedras.put(nueva, piedra);
     }
 
 }
