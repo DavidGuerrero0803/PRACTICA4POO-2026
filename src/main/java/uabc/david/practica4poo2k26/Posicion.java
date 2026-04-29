@@ -19,10 +19,6 @@ public class Posicion {
         return  columna;
     }
 
-    public boolean estaEnRango() {
-        return fila >= 0 && fila <= 3 && columna >= 0 && columna <= 3;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

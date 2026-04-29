@@ -120,8 +120,7 @@ public class VistaTablero {
             }
         } else {
             if (posicionesResaltadas.contains(pos)) {
-                shobu.realizarMovimientoPasivo(new Movimiento(indiceTableroSeleccionado,
-                        piedraSeleccionada.getPosicion(), pos, true));
+                shobu.realizarMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, true));
                 resetearSeleccion();
             } else {
                 resetearSeleccion();
@@ -142,8 +141,7 @@ public class VistaTablero {
             }
         } else {
             if (posicionesResaltadas.contains(pos)) {
-                shobu.realizarMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado,
-                        piedraSeleccionada.getPosicion(), pos, false));
+                shobu.realizarMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, false));
                 resetearSeleccion();
 
                 if (verificarVictoria()) {
@@ -224,14 +222,13 @@ public class VistaTablero {
         if (shobu.hayGanador()) {
             this.juegoTerminado = true;
             turno.setText("SE ACABÓ LA PARTIDA");
-            estado.setText("EL GANADOR ES EL JUGADOR " + shobu.getGanador().getNombre().toUpperCase());
+            estado.setText("EL GANADOR ES EL " + shobu.getGanador().getNombre().toUpperCase());
             for (int i = 0; i < 4; i++) {
                 actualizarGridPane(i);
             }
             contenedor.setDisable(true);
             return true;
         }
-
         return false;
     }
 

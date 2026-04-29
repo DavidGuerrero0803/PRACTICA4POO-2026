@@ -17,7 +17,6 @@ public class Shobu {
         this.turnoActual = 1;
         this.movimientoPasivo = null;
         this.pasivoRealizado = false;
-
         inicializarTableros();
         colocarPiedrasIniciales();
     }
@@ -37,18 +36,6 @@ public class Shobu {
                 tablero.agregarPiedra(new Piedra(2, new Posicion(0, COLUMNA)));
             });
         }
-    }
-
-    public Jugador getJugadorActual() {
-        return jugadores.get(turnoActual - 1);
-    }
-
-    public void finalizarTurno() {
-        turnoActual = (turnoActual == 1) ? 2 : 1;
-    }
-
-    public boolean pasivoRealizado() {
-        return pasivoRealizado;
     }
 
     private boolean esMovimientoValido(Movimiento movimiento, Tablero tablero) {
@@ -138,7 +125,6 @@ public class Shobu {
                 }
             }
         }
-
         return posicionesValidas;
     }
 
@@ -262,6 +248,10 @@ public class Shobu {
         piedra.setPosicion(movimiento.getDestino());
     }
 
+    public void finalizarTurno() {
+        turnoActual = (turnoActual == 1) ? 2 : 1;
+    }
+
     public boolean hayGanador() {
         return tableros.stream().anyMatch(tablero -> {
             int propietario = tablero.getPropietario();
@@ -271,20 +261,23 @@ public class Shobu {
     }
 
     public Jugador getGanador() {
-        for (Tablero tablero : tableros) {
-            boolean propietarioSinPiedras = true;
-            for (Piedra piedra : tablero.getPiedras().values()) {
-                if (piedra.getPropietario() == tablero.getPropietario()) {
-                    propietarioSinPiedras = false;
-                    break;
-                }
-            }
-            if (propietarioSinPiedras) {
-                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
-                return jugadores.get(idGanador - 1);
-            }
-        }
-        return null;
+        return tableros.stream()
+                .filter(tablero -> tablero.getPiedras().values().stream().noneMatch(piedra -> piedra.getPropietario() == tablero.getPropietario()))
+                .map(tablero -> (tablero.getPropietario() == 1) ? jugadores.get(1) : jugadores.get(0))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public ArrayList<Tablero> getTableros() {
+        return tableros;
+    }
+
+    public Jugador getJugadorActual() {
+        return jugadores.get(turnoActual - 1);
+    }
+
+    public boolean pasivoRealizado() {
+        return pasivoRealizado;
     }
 
     public void realizarMovimientoMaquina() {
@@ -345,9 +338,5 @@ public class Shobu {
                 }
             }
         }
-    }
-
-    public ArrayList<Tablero> getTableros() {
-        return tableros;
     }
 }
