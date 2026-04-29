@@ -15,36 +15,63 @@ public class Shobu {
         this.jugadores.add(jugador2);
         this.turnoActual = 1;
 
-
+        inicializarTableros();
+        colocarPiedrasIniciales();
     }
 
-    private void prepararJuego() {
-        tableros.put(ARRIBA_IZQUIERDA, new Tablero(Tablero.COLOR_NEGRO));
-        tableros.put(ARRIBA_DERECHA, new Tablero(Tablero.COLOR_BLANCO));
-        tableros.put(ABAJO_IZQUIERDA, new Tablero(Tablero.COLOR_NEGRO));
-        tableros.put(ABAJO_DERECHA, new Tablero(Tablero.COLOR_BLANCO));
+    private void inicializarTableros() {
+        tableros.add(new Tablero(0, "negro", 2));
+        tableros.add(new Tablero(1, "blanco", 2));
+        tableros.add(new Tablero(2, "negro", 1));
+        tableros.add(new Tablero(3, "blanco", 1));
+    }
 
-        for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
-            for (Tablero tablero : tableros.values()) {
-                tablero.setPosicion(new Posicion(0, columna), Tablero.BLANCA);
-                tablero.setPosicion(new Posicion(3, columna), Tablero.NEGRA);
-            }
+    private void colocarPiedrasIniciales() {
+        for (int columna = 0; columna < 4; columna++) {
+            final int COLUMNA = columna;
+            tableros.forEach(tablero -> {
+                tablero.agregarPiedra(new Piedra(1, new Posicion(3, COLUMNA)));
+                tablero.agregarPiedra(new Piedra(2, new Posicion(0, COLUMNA)));
+            });
         }
     }
 
-    public String getTurnoActual() {
-        return this.turnoActual;
+    public Jugador getJugadorActual() {
+        return jugadores.get(turnoActual - 1);
     }
 
-    public void cambiarTurno() {
-        turnoActual = turnoActual.equals(Tablero.NEGRA) ? Tablero.BLANCA : Tablero.NEGRA;
+    public void finalizarTurno() {
+        turnoActual = (turnoActual == 1) ? 2 : 1;
     }
 
-    public int[] calcularVector(Posicion inicio, Posicion fin) {
-        return new int[] {
-                fin.getFila() - inicio.getFila(),
-                fin.getColumna() - inicio.getColumna()
-        };
+    private boolean esMovimientoValido(Movimiento movimiento, Tablero tablero) {
+        Posicion origen = movimiento.getOrigen();
+        Posicion destino = movimiento.getDestino();
+
+        if (destino.getFila() < 0 || destino.getFila() > 3 || destino.getColumna() < 0 || destino.getColumna() > 3) {
+            return false;
+        }
+
+        int distancia = movimiento.getDistancia();
+        if (distancia < 1 || distancia > 2) {
+            return false;
+        }
+
+        Piedra piedraOrigen = tablero.getPiedraEnPosicion(origen);
+        if (piedraOrigen == null || piedraOrigen.getPropietario() != turnoActual) {
+            return false;
+        }
+
+        if (distancia == 2) {
+            Posicion intermedia = new Posicion(
+                    origen.getFila() + movimiento.getDeltaFila(),
+                    origen.getColumna() + movimiento.getDeltaColumna()
+            );
+            if (tablero.getPiedraEnPosicion(intermedia) != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public ArrayList<Posicion> obtenerTrayectoria(Posicion inicio, int[] vector) {
