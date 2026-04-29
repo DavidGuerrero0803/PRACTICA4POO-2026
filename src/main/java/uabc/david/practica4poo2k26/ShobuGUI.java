@@ -58,7 +58,18 @@ public class ShobuGUI extends Application {
         Jugador jugadorNegro = new Jugador("Jugador Negro", 1, false);
         Jugador jugadorBlanco = new Jugador("Jugador Blanco", 2, contraMaquina);
         shobu = new Shobu(jugadorNegro, jugadorBlanco);
+        mostrarJuego();
+    }
 
+    private void mostrarJuego() {
+        VistaTablero vistaTablero = new VistaTablero(shobu);
+
+        VBox contenedor = new VBox(10, vistaTablero.getContenedor());
+        contenedor.setAlignment(Pos.CENTER);
+        contenedor.setPadding(new Insets(20));
+
+        Scene escena = new Scene(contenedor, 800, 750);
+        escenarioPrincipal.setScene(escena);
     }
 
     public static void main(String[] args) {
