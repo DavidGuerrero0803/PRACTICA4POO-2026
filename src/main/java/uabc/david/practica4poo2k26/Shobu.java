@@ -7,6 +7,7 @@ public class Shobu {
     private ArrayList<Jugador> jugadores;
     private int turnoActual;
     private Movimiento movimientoPasivo;
+    private boolean pasivoRealizado;
 
     public Shobu(Jugador jugador1, Jugador jugador2) {
         this.tableros = new ArrayList<>();
@@ -15,6 +16,7 @@ public class Shobu {
         this.jugadores.add(jugador2);
         this.turnoActual = 1;
         this.movimientoPasivo = null;
+        this.pasivoRealizado = false;
 
         inicializarTableros();
         colocarPiedrasIniciales();
@@ -172,6 +174,90 @@ public class Shobu {
         return false;
     }
 
+    public ArrayList<Posicion> obtenerMovimientosAgresivosValidos(Posicion origen, int indiceTablero) {
+        ArrayList<Posicion> posicionesValidas = new ArrayList<>();
+
+        if (!esTableroAgresivoValido(indiceTablero)) {
+            return posicionesValidas;
+        }
+
+        Tablero tablero = tableros.get(indiceTablero);
+        int deltaFila = movimientoPasivo.getDeltaFila();
+        int deltaColumna = movimientoPasivo.getDeltaColumna();
+        int distancia = movimientoPasivo.getDistancia();
+
+        Posicion destino = new Posicion(
+                origen.getFila() + deltaFila * distancia,
+                origen.getColumna() + deltaColumna * distancia
+        );
+
+        Movimiento movimiento = new Movimiento(indiceTablero, origen, destino, false);
+        if (esMovimientoValido(movimiento, tablero) && esEmpujeValido(movimiento, tablero)) {
+            posicionesValidas.add(destino);
+        }
+
+        return posicionesValidas;
+    }
+
+    public boolean realizarMovimientoPasivo(Movimiento movimiento) {
+        Tablero tablero = tableros.get(movimiento.getIndiceTablero());
+        if (tablero.getPropietario() != turnoActual || !esMovimientoValido(movimiento, tablero)) {
+            return false;
+        }
+        if (tablero.getPiedraEnPosicion(movimiento.getDestino()) != null) {
+            return false;
+        }
+
+        actualizarMapaTablero(tablero, movimiento);
+        movimientoPasivo = movimiento;
+        pasivoRealizado = true;
+        return true;
+    }
+
+    public boolean realizarMovimientoAgresivo(Movimiento movimiento) {
+        if (!pasivoRealizado || !esTableroAgresivoValido(movimiento.getIndiceTablero())) return false;
+
+        Tablero tablero = tableros.get(movimiento.getIndiceTablero());
+
+        if (movimiento.getDeltaFila() != movimientoPasivo.getDeltaFila() ||
+                movimiento.getDeltaColumna() != movimientoPasivo.getDeltaColumna() ||
+                movimiento.getDistancia() != movimientoPasivo.getDistancia()) {
+            return false;
+        }
+
+        if (!esMovimientoValido(movimiento, tablero) || !esEmpujeValido(movimiento, tablero)) {
+            return false;
+        }
+
+        Posicion destino = movimiento.getDestino();
+        Piedra piedraEnemiga = tablero.getPiedraEnPosicion(destino);
+
+        if (piedraEnemiga != null) {
+            Posicion nuevaPosEnemiga = new Posicion(
+                    destino.getFila() + movimiento.getDeltaFila(),
+                    destino.getColumna() + movimiento.getDeltaColumna()
+            );
+            if (nuevaPosEnemiga.getFila() < 0 || nuevaPosEnemiga.getFila() > 3 ||
+                    nuevaPosEnemiga.getColumna() < 0 || nuevaPosEnemiga.getColumna() > 3) {
+                tablero.eliminarPiedra(piedraEnemiga);
+            } else {
+                tablero.actualizarPosicionPiedra(destino, nuevaPosEnemiga, piedraEnemiga);
+                piedraEnemiga.setPosicion(nuevaPosEnemiga);
+            }
+        }
+
+        actualizarMapaTablero(tablero, movimiento);
+        pasivoRealizado = false;
+        movimientoPasivo = null;
+        return true;
+    }
+
+    private void actualizarMapaTablero(Tablero tablero, Movimiento movimiento) {
+        Piedra piedra = tablero.getPiedraEnPosicion(movimiento.getOrigen());
+        tablero.actualizarPosicionPiedra(movimiento.getOrigen(), movimiento.getDestino(), piedra);
+        piedra.setPosicion(movimiento.getDestino());
+    }
+
     public String verificarGanador() {
         for (String nombre : POSICIONES_TABLERO) {
             Tablero tablero = tableros.get(nombre);
@@ -201,7 +287,7 @@ public class Shobu {
         return null;
     }
 
-    public Tablero getTablero(String nombre) {
-        return tableros.get(nombre);
+    public ArrayList<Tablero> getTableros() {
+        return tableros;
     }
 }
