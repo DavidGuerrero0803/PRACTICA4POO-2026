@@ -1,25 +1,21 @@
 package uabc.david.practica4poo2k26;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Shobu {
-    private HashMap<String, Tablero> tableros;
-    private String turnoActual;
+    private ArrayList<Tablero> tableros;
+    private ArrayList<Jugador> jugadores;
+    private int turnoActual;
 
-    public static final String ARRIBA_IZQUIERDA = "ARRIBA_IZQUIERDA";
-    public static final String ARRIBA_DERECHA   = "ARRIBA_DERECHA";
-    public static final String ABAJO_IZQUIERDA  = "ABAJO_IZQUIERDA";
-    public static final String ABAJO_DERECHA    = "ABAJO_DERECHA";
 
-    public static final String[] POSICIONES_TABLERO = {
-      ARRIBA_IZQUIERDA, ARRIBA_DERECHA, ABAJO_IZQUIERDA, ABAJO_DERECHA
-    };
+    public Shobu(Jugador jugador1, Jugador jugador2) {
+        this.tableros = new ArrayList<>();
+        this.jugadores = new ArrayList<>();
+        this.jugadores.add(jugador1);
+        this.jugadores.add(jugador2);
+        this.turnoActual = 1;
 
-    public Shobu() {
-        this.tableros = new HashMap<>();
-        this.turnoActual = Tablero.NEGRA;
-        prepararJuego();
+
     }
 
     private void prepararJuego() {
