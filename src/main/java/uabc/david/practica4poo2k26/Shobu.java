@@ -47,6 +47,10 @@ public class Shobu {
         turnoActual = (turnoActual == 1) ? 2 : 1;
     }
 
+    public boolean pasivoRealizado() {
+        return pasivoRealizado;
+    }
+
     private boolean esMovimientoValido(Movimiento movimiento, Tablero tablero) {
         Posicion origen = movimiento.getOrigen();
         Posicion destino = movimiento.getDestino();
@@ -258,33 +262,89 @@ public class Shobu {
         piedra.setPosicion(movimiento.getDestino());
     }
 
-    public String verificarGanador() {
-        for (String nombre : POSICIONES_TABLERO) {
-            Tablero tablero = tableros.get(nombre);
-            int negras = 0;
-            int blancas = 0;
+    public boolean hayGanador() {
+        return tableros.stream().anyMatch(tablero -> {
+            int propietario = tablero.getPropietario();
+            return tablero.getPiedras().values().stream()
+                    .noneMatch(piedra -> piedra.getPropietario() == propietario);
+        });
+    }
 
-            for (int fila = 0; fila < Tablero.TAMAÑO; fila++) {
-                for (int columna = 0; columna < Tablero.TAMAÑO; columna++) {
-                    String valorCelda = tablero.getPosicion(new Posicion(fila, columna));
-                    if (valorCelda.equals(Tablero.NEGRA)) {
-                        negras++;
-                    }
-                    if (valorCelda.equals(Tablero.BLANCA)) {
-                        blancas++;
+    public Jugador getGanador() {
+        for (Tablero tablero : tableros) {
+            boolean propietarioSinPiedras = true;
+            for (Piedra piedra : tablero.getPiedras().values()) {
+                if (piedra.getPropietario() == tablero.getPropietario()) {
+                    propietarioSinPiedras = false;
+                    break;
+                }
+            }
+            if (propietarioSinPiedras) {
+                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
+                return jugadores.get(idGanador - 1);
+            }
+        }
+        return null;
+    }
+
+    public void realizarMovimientoMaquina() {
+        ArrayList<int[]> opcionesPasivo = new ArrayList<>();
+
+        for (Tablero tablero : tableros) {
+            if (tablero.getPropietario() == turnoActual) {
+                for (Piedra piedra : tablero.getPiedras().values()) {
+                    if (piedra.getPropietario() == turnoActual) {
+                        ArrayList<Posicion> validos = obtenerMovimientosPasivosValidos(
+                                piedra.getPosicion(), tablero.getIndice()
+                        );
+                        for (Posicion destino : validos) {
+                            opcionesPasivo.add(new int[]{
+                                    tablero.getIndice(),
+                                    piedra.getPosicion().getFila(),
+                                    piedra.getPosicion().getColumna(),
+                                    destino.getFila(),
+                                    destino.getColumna()
+                            });
+                        }
                     }
                 }
             }
-
-            if (negras == 0) {
-                return Tablero.BLANCA;
-            }
-            if (blancas == 0) {
-                return Tablero.NEGRA;
-            }
         }
 
-        return null;
+        if (opcionesPasivo.isEmpty()) {
+            return;
+        }
+
+        int[] opcion = opcionesPasivo.get((int)(Math.random() * opcionesPasivo.size()));
+        Movimiento pasivo = new Movimiento(
+                opcion[0],
+                new Posicion(opcion[1], opcion[2]),
+                new Posicion(opcion[3], opcion[4]),
+                true
+        );
+        realizarMovimientoPasivo(pasivo);
+
+        for (Tablero tablero : tableros) {
+            if (esTableroAgresivoValido(tablero.getIndice())) {
+                for (Piedra piedra : tablero.getPiedras().values()) {
+                    if (piedra.getPropietario() == turnoActual) {
+                        ArrayList<Posicion> validos = obtenerMovimientosAgresivosValidos(
+                                piedra.getPosicion(), tablero.getIndice()
+                        );
+                        if (!validos.isEmpty()) {
+                            Movimiento agresivo = new Movimiento(
+                                    tablero.getIndice(),
+                                    piedra.getPosicion(),
+                                    validos.get(0),
+                                    false
+                            );
+                            realizarMovimientoAgresivo(agresivo);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public ArrayList<Tablero> getTableros() {
