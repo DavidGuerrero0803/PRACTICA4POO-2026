@@ -1,24 +1,19 @@
 package uabc.david.practica4poo2k26;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Tablero {
-    private ArrayList<ArrayList<String>> cuadricula;
-    private String colorTablero;
+    private HashMap<Posicion, Piedra> piedras;
+    private int indice;
+    private String color;
+    private int propietario;
 
-    public static final String VACÍA = "V";
-    public static final String NEGRA = "N";
-    public static final String BLANCA = "B";
-
-    public static final String COLOR_NEGRO = "NEGRO";
-    public static final String COLOR_BLANCO = "BLANCO";
-
-    public static final int TAMAÑO = 4;
-
-    public Tablero(String color) {
-        this.colorTablero = color;
-        this.cuadricula = new ArrayList<>();
-        inicializarCuadricula();
+    public Tablero(int indice, String color, int propietario) {
+        this.indice = indice;
+        this.color = color;
+        this.propietario = propietario;
+        this.piedras = new HashMap<>();
     }
 
     private void inicializarCuadricula() {
@@ -32,7 +27,11 @@ public class Tablero {
     }
 
     public String getColor() {
-        return this.colorTablero;
+        return color;
+    }
+
+    public int getPropietario() {
+        return propietario;
     }
 
     public String getColorOpuesto() {
