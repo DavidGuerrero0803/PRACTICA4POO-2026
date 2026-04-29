@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 public class Tablero {
     private HashMap<Posicion, Piedra> piedras;
-    private int indice;
     private String color;
+    private int indice;
     private int propietario;
 
     public Tablero(int indice, String color, int propietario) {
@@ -31,7 +31,7 @@ public class Tablero {
         return piedras;
     }
 
-    public Piedra getPiedraEnPosicion(Posicion posicion) {
+    public Piedra getPosPiedra(Posicion posicion) {
         return piedras.get(posicion);
     }
 
@@ -43,7 +43,7 @@ public class Tablero {
         piedras.remove(piedra.getPosicion());
     }
 
-    public void actualizarPosicionPiedra(Posicion anterior, Posicion nueva, Piedra piedra) {
+    public void actualizarPosPiedra(Posicion anterior, Posicion nueva, Piedra piedra) {
         piedras.remove(anterior);
         piedras.put(nueva, piedra);
     }

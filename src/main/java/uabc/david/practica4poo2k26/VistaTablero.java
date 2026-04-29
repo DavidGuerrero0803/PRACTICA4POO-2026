@@ -99,7 +99,7 @@ public class VistaTablero {
         Posicion posicionClicada = new Posicion(fila, columna);
         Tablero tablero = shobu.getTableros().get(indiceTablero);
 
-        Piedra piedraEnCasilla = tablero.getPiedraEnPosicion(posicionClicada);
+        Piedra piedraEnCasilla = tablero.getPosPiedra(posicionClicada);
 
         if (!shobu.pasivoRealizado()) {
             manejarFasePasiva(indiceTablero, posicionClicada, piedraEnCasilla, tablero);
@@ -116,11 +116,11 @@ public class VistaTablero {
 
                 piedraSeleccionada = piedra;
                 indiceTableroSeleccionado = indiceTablero;
-                posicionesResaltadas = shobu.obtenerMovimientosPasivosValidos(pos, indiceTablero);
+                posicionesResaltadas = shobu.getMovimientosPasivos(pos, indiceTablero);
             }
         } else {
             if (posicionesResaltadas.contains(pos)) {
-                shobu.realizarMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, true));
+                shobu.hacerMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, true));
                 resetearSeleccion();
             } else {
                 resetearSeleccion();
@@ -132,7 +132,7 @@ public class VistaTablero {
     private void manejarFaseAgresiva(int indiceTablero, Posicion pos, Piedra piedra) {
         if (piedraSeleccionada == null) {
             if (piedra != null && piedra.getPropietario() == shobu.getJugadorActual().getIdentificador()) {
-                ArrayList<Posicion> validos = shobu.obtenerMovimientosAgresivosValidos(pos, indiceTablero);
+                ArrayList<Posicion> validos = shobu.getMovimientosAgresivos(pos, indiceTablero);
                 if (!validos.isEmpty()) {
                     piedraSeleccionada = piedra;
                     indiceTableroSeleccionado = indiceTablero;
@@ -141,7 +141,7 @@ public class VistaTablero {
             }
         } else {
             if (posicionesResaltadas.contains(pos)) {
-                shobu.realizarMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, false));
+                shobu.hacerMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, false));
                 resetearSeleccion();
 
                 if (verificarVictoria()) {
@@ -179,7 +179,7 @@ public class VistaTablero {
     public void actualizarPanel() {
         if (juegoTerminado) return;
         turno.setText("Turno: " + shobu.getJugadorActual().getNombre());
-        estado.setText(shobu.pasivoRealizado() ? "Movimiento AGRESIVO" : "Movimiento PASIVO");
+        estado.setText(shobu.pasivoRealizado() ? "Realiza tu movimiento AGRESIVO" : "Realiza tu movimiento PASIVO");
         for (int i = 0; i < 4; i++) {
             actualizarGridPane(i);
         }
@@ -197,14 +197,14 @@ public class VistaTablero {
                 casilla.setStyle("-fx-background-color: #c0b090; -fx-border-color: #8a7a60; -fx-border-width: 1;");
                 casilla.setGraphic(null);
 
-                Piedra piedra = tablero.getPiedraEnPosicion(posActual);
+                Piedra piedra = tablero.getPosPiedra(posActual);
 
                 if (piedra != null) {
                     Circle circulo = new Circle(24);
                     circulo.setFill(piedra.getPropietario() == 1 ? Color.BLACK : Color.WHITE);
                     circulo.setStroke(Color.GRAY);
 
-                    if (piedraSeleccionada != null && piedra.equals(piedraSeleccionada) && indiceTablero == indiceTableroSeleccionado) {
+                    if (piedra.equals(piedraSeleccionada) && indiceTablero == indiceTableroSeleccionado) {
                         circulo.setStroke(Color.GOLD);
                         circulo.setStrokeWidth(3);
                     }

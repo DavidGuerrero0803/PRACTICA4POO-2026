@@ -1,9 +1,9 @@
 package uabc.david.practica4poo2k26;
 
 public class Movimiento {
-    private int indiceTablero;
     private Posicion origen;
     private Posicion destino;
+    private int indiceTablero;
 
     public Movimiento(int indiceTablero, Posicion origen, Posicion destino, boolean esPasivo) {
         this.indiceTablero = indiceTablero;

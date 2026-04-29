@@ -1,8 +1,8 @@
 package uabc.david.practica4poo2k26;
 
 public class Piedra {
-    private int propietario;
     private Posicion posicion;
+    private int propietario;
 
     public Piedra(int propietario, Posicion posicion) {
         this.propietario = propietario;
