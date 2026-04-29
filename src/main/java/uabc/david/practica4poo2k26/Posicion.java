@@ -1,5 +1,7 @@
 package uabc.david.practica4poo2k26;
 
+import java.util.Objects;
+
 public class Posicion {
     private int fila;
     private int columna;
@@ -31,5 +33,10 @@ public class Posicion {
         }
         Posicion otra = (Posicion) obj;
         return fila == otra.fila && columna == otra.columna;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fila, columna);
     }
 }
