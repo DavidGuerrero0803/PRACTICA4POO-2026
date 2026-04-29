@@ -43,7 +43,7 @@ public class ShobuGUI extends Application {
         botonPvE.setOnAction(e -> iniciarPartida(true));
 
         Label nombre = new Label("Práctica #4 - Mario David Guerrero Márquez");
-        nombre.setFont(Font.font("Arial", 15));
+        nombre.setFont(Font.font(15));
         nombre.setTextFill(Color.WHITE);
 
         VBox contenedor = new VBox(20, titulo, botonPvP, botonPvE, nombre);
@@ -55,8 +55,8 @@ public class ShobuGUI extends Application {
     }
 
     private void iniciarPartida(boolean contraMaquina) {
-        Jugador jugadorNegro = new Jugador("Jugador Negro", 1, false);
-        Jugador jugadorBlanco = new Jugador("Jugador Blanco", 2, contraMaquina);
+        Jugador jugadorNegro = new Jugador("JUGADOR NEGRO", 1, false);
+        Jugador jugadorBlanco = new Jugador("JUGADOR BLANCO", 2, contraMaquina);
         shobu = new Shobu(jugadorNegro, jugadorBlanco);
         mostrarJuego();
     }

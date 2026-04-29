@@ -39,8 +39,8 @@ public class VistaTablero {
     private void construirPanel() {
         turno = new Label();
         estado = new Label();
-        turno.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        estado.setStyle("-fx-font-size: 13px;");
+        turno.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        estado.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
         HBox filaSuperior = new HBox(20);
         filaSuperior.setAlignment(Pos.CENTER);
@@ -178,7 +178,7 @@ public class VistaTablero {
 
     public void actualizarPanel() {
         if (juegoTerminado) return;
-        turno.setText("Turno: " + shobu.getJugadorActual().getNombre());
+        turno.setText("-> TU TURNO, " + shobu.getJugadorActual().getNombre());
         estado.setText(shobu.pasivoRealizado() ? "Realiza tu movimiento AGRESIVO" : "Realiza tu movimiento PASIVO");
         for (int i = 0; i < 4; i++) {
             actualizarGridPane(i);
