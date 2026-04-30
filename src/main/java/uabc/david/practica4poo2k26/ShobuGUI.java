@@ -50,7 +50,7 @@ public class ShobuGUI extends Application {
         contenedor.setAlignment(Pos.CENTER);
         contenedor.setPadding(new Insets(40));
 
-        Scene escena = new Scene(contenedor, 800, 750);
+        Scene escena = new Scene(contenedor, 800, 800);
         escenarioPrincipal.setScene(escena);
     }
 
@@ -68,7 +68,7 @@ public class ShobuGUI extends Application {
         contenedor.setAlignment(Pos.CENTER);
         contenedor.setPadding(new Insets(20));
 
-        Scene escena = new Scene(contenedor, 800, 750);
+        Scene escena = new Scene(contenedor, 800, 800);
         escenarioPrincipal.setScene(escena);
     }
 

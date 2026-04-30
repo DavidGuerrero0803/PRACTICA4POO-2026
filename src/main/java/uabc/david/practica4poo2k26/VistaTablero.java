@@ -17,8 +17,11 @@ import static javafx.util.Duration.seconds;
 public class VistaTablero {
     private Shobu shobu;
     private VBox contenedor;
-    private Label turno;
+    private Label turnoBlanco;
+    private Label turnoNegro;
     private Label estado;
+    private Label estadoPasivo;
+    private Label estadoAgresivo;
     private boolean juegoTerminado;
     private ArrayList<GridPane> cuadriculas;
 
@@ -37,14 +40,20 @@ public class VistaTablero {
     }
 
     private void construirPanel() {
-        turno = new Label();
+        turnoBlanco = new Label();
+        turnoNegro = new Label();
         estado = new Label();
-        turno.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        estadoPasivo = new Label();
+        estadoAgresivo = new Label();
+        turnoBlanco.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        turnoNegro.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         estado.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        estadoPasivo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        estadoAgresivo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        HBox filaSuperior = new HBox(20);
+        HBox filaSuperior = new HBox(10);
         filaSuperior.setAlignment(Pos.CENTER);
-        HBox filaInferior = new HBox(20);
+        HBox filaInferior = new HBox(10);
         filaInferior.setAlignment(Pos.CENTER);
 
         for (int i = 0; i < 4; i++) {
@@ -58,7 +67,7 @@ public class VistaTablero {
             
         }
 
-        contenedor = new VBox(20, turno, estado, filaSuperior, filaInferior);
+        contenedor = new VBox(10, turnoBlanco, estado, filaSuperior, filaInferior, turnoNegro);
         contenedor.setAlignment(Pos.CENTER);
         contenedor.setPadding(new Insets(10));
 
@@ -73,8 +82,8 @@ public class VistaTablero {
 
         String colorTablero = shobu.getTableros().get(indiceTablero).getColor();
         String estiloFondo = colorTablero.equals("negro")
-                ? "-fx-background-color: #b58863; -fx-border-color: #3a2a1a; -fx-border-width: 3;"
-                : "-fx-background-color: #f0d9b5; -fx-border-color: #8b6914; -fx-border-width: 3;";
+                ? "-fx-background-color: #3a2a1a; -fx-border-color: #3a2a1a; -fx-border-width: 3;"
+                : "-fx-background-color: #f0d9b5; -fx-border-color: #f0d9b5; -fx-border-width: 3;";
         cuadricula.setStyle(estiloFondo);
 
         for (int fila = 0; fila < 4; fila++) {
@@ -177,11 +186,31 @@ public class VistaTablero {
     }
 
     public void actualizarPanel() {
-        if (juegoTerminado) return;
-        turno.setText("-> TU TURNO, " + shobu.getJugadorActual().getNombre());
-        estado.setText(shobu.pasivoRealizado() ? "Realiza tu movimiento AGRESIVO" : "Realiza tu movimiento PASIVO");
+        if (juegoTerminado) {
+            return;
+        }
+        actualizarTurnos();
+
+        estado.setText(shobu.pasivoRealizado() ? "Haz un movimiento AGRESIVO en un tablero de color opuesto"
+                : "Haz un movimiento PASIVO en tus tableros");
         for (int i = 0; i < 4; i++) {
             actualizarGridPane(i);
+        }
+    }
+
+    public void actualizarTurnos() {
+        if (shobu.getJugadorActual().getIdentificador() == 2) {
+            turnoBlanco.setText("-> TU TURNO, JUGADOR BLANCO");
+            turnoBlanco.setTextFill(Color.DARKBLUE);
+
+            turnoNegro.setText("JUGADOR NEGRO");
+            turnoNegro.setTextFill(Color.GRAY);
+        } else {
+            turnoNegro.setText("-> TU TURNO, JUGADOR NEGRO");
+            turnoNegro.setTextFill(Color.DARKBLUE);
+
+            turnoBlanco.setText("JUGADOR BLANCO");
+            turnoBlanco.setTextFill(Color.GRAY);
         }
     }
 
@@ -194,25 +223,26 @@ public class VistaTablero {
                 Button casilla = (Button) cuadricula.getChildren().get(fila * 4 + columna);
                 Posicion posActual = new Posicion(fila, columna);
 
-                casilla.setStyle("-fx-background-color: #c0b090; -fx-border-color: #8a7a60; -fx-border-width: 1;");
+                casilla.setStyle("-fx-background-color: #ffffff; -fx-border-color: #8a7a60; -fx-border-radius: 5;");
                 casilla.setGraphic(null);
 
                 Piedra piedra = tablero.getPosPiedra(posActual);
 
                 if (piedra != null) {
-                    Circle circulo = new Circle(24);
+                    Circle circulo = new Circle(20);
                     circulo.setFill(piedra.getPropietario() == 1 ? Color.BLACK : Color.WHITE);
-                    circulo.setStroke(Color.GRAY);
+                    circulo.setStroke(Color.BLACK);
+                    circulo.setStrokeWidth(2);
 
                     if (piedra.equals(piedraSeleccionada) && indiceTablero == indiceTableroSeleccionado) {
-                        circulo.setStroke(Color.GOLD);
-                        circulo.setStrokeWidth(3);
+                        circulo.setStroke(Color.GREEN);
+                        circulo.setStrokeWidth(4);
                     }
                     casilla.setGraphic(circulo);
                 }
 
                 if (posicionesResaltadas.contains(posActual) && indiceTablero == indiceTableroSeleccionado) {
-                    casilla.setStyle("-fx-background-color: rgba(0, 200, 0, 0.4); -fx-border-color: #00aa00; -fx-border-width: 2;");
+                    casilla.setStyle("-fx-border-color: #00ff00; -fx-background-color: #057d05; -fx-border-width: 3; -fx-border-radius: 5;");
                 }
             }
         }
@@ -221,8 +251,8 @@ public class VistaTablero {
     private boolean verificarVictoria() {
         if (shobu.hayGanador()) {
             this.juegoTerminado = true;
-            turno.setText("SE ACABÓ LA PARTIDA");
             estado.setText("EL GANADOR ES EL " + shobu.getGanador().getNombre().toUpperCase());
+            estado.setTextFill(Color.GREEN);
             for (int i = 0; i < 4; i++) {
                 actualizarGridPane(i);
             }
