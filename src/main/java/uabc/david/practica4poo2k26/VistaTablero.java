@@ -110,7 +110,7 @@ public class VistaTablero {
 
         Piedra piedraEnCasilla = tablero.getPosPiedra(posicionClicada);
 
-        if (!shobu.pasivoRealizado()) {
+        if (!shobu.getPasivoRealizado()) {
             manejarFasePasiva(indiceTablero, posicionClicada, piedraEnCasilla, tablero);
         } else {
             manejarFaseAgresiva(indiceTablero, posicionClicada, piedraEnCasilla);
@@ -194,7 +194,7 @@ public class VistaTablero {
         }
         actualizarTurnos();
 
-        estado.setText(shobu.pasivoRealizado() ? "Haz un movimiento AGRESIVO en un tablero de color opuesto"
+        estado.setText(shobu.getPasivoRealizado() ? "Haz un movimiento AGRESIVO en un tablero de color opuesto"
                 : "Haz un movimiento PASIVO en tus tableros");
         for (int i = 0; i < 4; i++) {
             actualizarGridPane(i);
