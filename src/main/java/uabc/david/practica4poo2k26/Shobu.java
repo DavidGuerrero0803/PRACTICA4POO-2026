@@ -263,12 +263,20 @@ public class Shobu {
     }
 
     public Jugador getGanador() {
-        return tableros.stream()
-                .filter(tablero -> tablero.getPiedras().values().stream()
-                        .noneMatch(piedra -> piedra.getPropietario() == tablero.getPropietario()))
-                .map(tablero -> (tablero.getPropietario() == 1) ? jugadores.get(1) : jugadores.get(0))
-                .findFirst()
-                .orElse(null);
+        for (Tablero tablero : tableros) {
+            boolean propietarioSinPiedras = true;
+            for (Piedra piedra : tablero.getPiedras().values()) {
+                if (piedra.getPropietario() == tablero.getPropietario()) {
+                    propietarioSinPiedras = false;
+                    break;
+                }
+            }
+            if (propietarioSinPiedras) {
+                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
+                return jugadores.get(idGanador - 1);
+            }
+        }
+        return null;
     }
 
     public ArrayList<Tablero> getTableros() {

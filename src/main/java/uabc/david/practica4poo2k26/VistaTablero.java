@@ -151,11 +151,12 @@ public class VistaTablero {
         } else {
             if (posicionesResaltadas.contains(pos)) {
                 shobu.hacerMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, false));
-                resetearSeleccion();
 
                 if (verificarVictoria()) {
                     return;
                 }
+
+                resetearSeleccion();
 
                 shobu.finalizarTurno();
                 if (shobu.getJugadorActual().esMaquina()) {
@@ -164,7 +165,9 @@ public class VistaTablero {
                     pausa.setOnFinished(evento -> {
                         shobu.realizarMovimientoMaquina();
 
-                        if (verificarVictoria()) return;
+                        if (verificarVictoria()) {
+                            return;
+                        }
 
                         shobu.finalizarTurno();
                         actualizarPanel();
