@@ -37,10 +37,10 @@ public class Piedra {
     /**
      * Cambia la posición que tenga la piedra.
      * Permite actualizar la posición de la piedra tras un movimiento.
-     * @param posicion Nueva posición de la piedra.
+     * @param nuevaPosicion Posición nueva de la piedra.
      */
-    public void setPosicion(Posicion posicion) {
-        this.posicion = posicion;
+    public void setPosicion(Posicion nuevaPosicion) {
+        this.posicion = nuevaPosicion;
     }
 
 }
