@@ -49,7 +49,7 @@ public class Movimiento {
 
     /**
      * Calcula la dirección vertical del movimiento.
-     * @return -1 (si es arriba), 0 (si no hay cambio) o 1 (si es abajo).
+     * @return -1 (si es arriba), 0 (no hay cambio) o 1 (si es abajo).
      */
     public int getDeltaFila() {
         int diferencia = destino.getFila() - origen.getFila();
@@ -64,7 +64,7 @@ public class Movimiento {
 
     /**
      * Calcula la dirección horizontal del movimiento.
-     * @return -1 (si es izquierda), 0 (si no hay cambio) o 1 (si es derecha).
+     * @return -1 (si es izquierda), 0 (no hay cambio) o 1 (si es derecha).
      */
     public int getDeltaColumna() {
         int diferencia = destino.getColumna() - origen.getColumna();
@@ -78,14 +78,14 @@ public class Movimiento {
     }
 
     /**
-     * Calcula la distancia del movimiento en casillas (1-2)
-     * (el máximo entre la diferencia de fila y columna).
-     * Los movimientos válidos son de distancia 1 o 2.
+     * Calcula la distancia del movimiento en casillas (1-2).
      * @return La distancia en casillas del movimiento.
      */
     public int getDistancia() {
+        // Se consigue la diferencia absoluta de la fila y columna.
         int diferenciaFila = Math.abs(destino.getFila() - origen.getFila());
         int diferenciaColumna = Math.abs(destino.getColumna() - origen.getColumna());
+        // Regresa el máximo entre la diferencia absoluta de fila y columna.
         return Math.max(diferenciaFila, diferenciaColumna);
     }
 }

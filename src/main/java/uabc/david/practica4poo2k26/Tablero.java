@@ -11,18 +11,18 @@ public class Tablero {
     private HashMap<Posicion, Piedra> piedras;
     private String color;
     private int indice;
-    private int propietario;
+    private int idJugador;
 
     /**
      * Crea un tablero vacío con índice, color y propietario.
-     * @param indice ID único del tablero.
+     * @param indice índice del tablero (0, 1, 2 o 3).
      * @param color Color del tablero ("negro" o "blanco").
-     * @param propietario Jugador al que pertenece este tablero (1 o 2).
+     * @param idJugador Jugador al que pertenece este tablero (1 o 2).
      */
-    public Tablero(int indice, String color, int propietario) {
+    public Tablero(int indice, String color, int idJugador) {
         this.indice = indice;
         this.color = color;
-        this.propietario = propietario;
+        this.idJugador = idJugador;
         this.piedras = new HashMap<>();
     }
 
@@ -47,7 +47,7 @@ public class Tablero {
      * @return El identificador del jugador del tablero.
      */
     public int getPropietario() {
-        return propietario;
+        return idJugador;
     }
 
     /**
@@ -69,31 +69,31 @@ public class Tablero {
 
     /**
      * Añade una piedra al tablero usando su posición.
-     * @param piedra Piedra a agregar.
+     * @param nuevaPiedra Piedra a agregar.
      */
-    public void agregarPiedra(Piedra piedra) {
-        piedras.put(piedra.getPosicion(), piedra);
+    public void agregarPiedra(Piedra nuevaPiedra) {
+        piedras.put(nuevaPiedra.getPosicion(), nuevaPiedra);
     }
 
     /**
      * Elimina una piedra del tablero.
-     * @param piedra Piedra a eliminar.
+     * @param piedraEliminada Piedra a eliminar.
      */
-    public void eliminarPiedra(Piedra piedra) {
-        piedras.remove(piedra.getPosicion());
+    public void eliminarPiedra(Piedra piedraEliminada) {
+        piedras.remove(piedraEliminada.getPosicion());
     }
 
     /**
      * Actualiza la posición de una piedra.
      * @param anterior Posición previa de la piedra.
      * @param nueva Nueva posición de la piedra.
-     * @param piedra La piedra que se está moviendo.
+     * @param piedraMovida La piedra que se está moviendo.
      */
-    public void actualizarPosPiedra(Posicion anterior, Posicion nueva, Piedra piedra) {
+    public void actualizarPosPiedra(Posicion anterior, Posicion nueva, Piedra piedraMovida) {
         // Primero se borra la entrada anterior.
         piedras.remove(anterior);
         // Después se añade la nueva piedra con la posición actualizada.
-        piedras.put(nueva, piedra);
+        piedras.put(nueva, piedraMovida);
     }
 
 }

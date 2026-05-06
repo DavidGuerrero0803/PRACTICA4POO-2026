@@ -65,16 +65,76 @@ public class Shobu {
     }
 
     /**
+     * Regresa los 4 tableros.
+     * @return El ArrayList de los 4 tableros del juego.
+     */
+    public ArrayList<Tablero> getTableros() {
+        return tableros;
+    }
+
+    /**
+     * Regresa el valor del jugador actual.
+     * @return El jugador cuyo turno es actualmente.
+     */
+    public Jugador getJugadorActual() {
+        // Como el valor del turnoActual y el índice del ArrayList son diferentes,
+        // se debe realizar la resta para evitar un desbordamiento.
+        return jugadores.get(turnoActual - 1);
+    }
+
+    /**
+     * Regresa el booleano que se encarga de avisar si ya se realizó el mov. pasivo.
+     * @return true si ya se realizó el movimiento pasivo en el turno.
+     */
+    public boolean getPasivoRealizado() {
+        return pasivoRealizado;
+    }
+
+    /**
+     * Identifica y regresa al jugador ganador.
+     * @return El jugador ganador, o null si es que aún no hay un ganador.
+     */
+    public Jugador getGanador() {
+        // Se recorren cada uno de los 4 tableros del juego.
+        for (Tablero tablero : tableros) {
+            // Se asume que el dueño del tablero ya no tiene piedras.
+            boolean jugadorSinPiedras = true;
+            // Se revisan todas las piedras que hay en el HashMap del tablero actual.
+            for (Piedra piedra : tablero.getPiedras().values()) {
+                // Si hay al menos una piedra que pertenezca al dueño del tablero,
+                // significa que todavía no ha perdido en este tablero.
+                if (piedra.getPropietario() == tablero.getPropietario()) {
+                    // El booleano pasa ahora a ser false.
+                    jugadorSinPiedras = false;
+                    // Se deja de revisar el tablero y busca en el siguiente.
+                    break;
+                }
+            }
+            // Si aun el booleano sigue siendo true, pasa al interior de la condición.
+            if (jugadorSinPiedras) {
+                // Si el dueño del tablero perdió sus piedras, entonces el ganador es el otro jugador.
+                // Se consigue el ID para darle la victoria al jugador opuesto.
+                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
+                // Regresa el jugador correspondiente del ArrayList.
+                // Al ser diferentes el ID y el índice del ArrayList, es necesario realizar la resta.
+                return jugadores.get(idGanador - 1);
+            }
+        }
+        // En caso de que al revisar y nadie haya perdido, entonces regresará un null.
+        return null;
+    }
+
+    /**
      * Se valida si un movimiento es legal, validando lo siguiente:
      * Si la distancia es de 1 o de 2.
      * No hay obstáculos intermedios en movimientos de distancia 2.
-     * @param movimiento Movimiento a validar.
+     * @param posibleMovimiento Movimiento a validar.
      * @param tablero Tablero donde se realiza el movimiento.
      * @return true si el movimiento es válido, false en caso de que no lo sea.
      */
-    private boolean validarMovimiento(Movimiento movimiento, Tablero tablero) {
-        Posicion origen = movimiento.getOrigen();
-        Posicion destino = movimiento.getDestino();
+    private boolean validarMovimiento(Movimiento posibleMovimiento, Tablero tablero) {
+        Posicion origen = posibleMovimiento.getOrigen();
+        Posicion destino = posibleMovimiento.getDestino();
 
         // Verifica si el destino está dentro de los límites del tablero 4x4.
         if (destino.getFila() < 0 || destino.getFila() > 3 || destino.getColumna() < 0 || destino.getColumna() > 3) {
@@ -82,7 +142,7 @@ public class Shobu {
         }
 
         // Verifica si el movimiento es de 1 o 2 casillas.
-        int distancia = movimiento.getDistancia();
+        int distancia = posibleMovimiento.getDistancia();
         if (distancia < 1 || distancia > 2) {
             return false;
         }
@@ -98,8 +158,8 @@ public class Shobu {
         if (distancia == 2) {
             // Se obtiene la posición intermedia.
             Posicion intermedia = new Posicion(
-                    origen.getFila() + movimiento.getDeltaFila(),
-                    origen.getColumna() + movimiento.getDeltaColumna()
+                    origen.getFila() + posibleMovimiento.getDeltaFila(),
+                    origen.getColumna() + posibleMovimiento.getDeltaColumna()
             );
             // Se realiza la condición para saber si el movimiento de 2 es válido.
             if (tablero.getPosPiedra(intermedia) != null) {
@@ -113,12 +173,12 @@ public class Shobu {
 
     /**
      * Se valida si es posible empujar la piedra en un movimiento agresivo.
-     * @param movimiento Movimiento agresivo a validar
-     * @param tablero Tablero donde ocurre el empuje
+     * @param agresivoAValidar Movimiento agresivo a validar.
+     * @param tablero Tablero donde ocurre el empuje.
      * @return true si el empuje es válido o no hay nada que empujar, false en caso contrario.
      */
-    private boolean validarEmpuje(Movimiento movimiento, Tablero tablero) {
-        Posicion destino = movimiento.getDestino();
+    private boolean validarEmpuje(Movimiento agresivoAValidar, Tablero tablero) {
+        Posicion destino = agresivoAValidar.getDestino();
         Piedra piedraDestino = tablero.getPosPiedra(destino);
 
         // Esta condición permite saber si la casilla está o no vacía.
@@ -134,8 +194,8 @@ public class Shobu {
 
         // Calcula la posición de la piedra empujada.
         Posicion posEmpuje = new Posicion(
-                destino.getFila() + movimiento.getDeltaFila(),
-                destino.getColumna() + movimiento.getDeltaColumna()
+                destino.getFila() + agresivoAValidar.getDeltaFila(),
+                destino.getColumna() + agresivoAValidar.getDeltaColumna()
         );
 
         // La condición existe para saber si la posición queda fuera del tablero.
@@ -148,11 +208,11 @@ public class Shobu {
     }
 
     /**
-     * Verifica que el tablero agresivo sea de color opuesto al tablero pasivo.
+     * Verifica que el tablero del movimiento agresivo sea de color opuesto al tablero del movimiento pasivo.
      * @param indiceTablero Índice del tablero agresivo.
      * @return true si el tablero es de color opuesto al pasivo, false en caso de que no.
      */
-    private boolean validarTableroAgresivo(int indiceTablero) {
+    private boolean esTableroOpuesto(int indiceTablero) {
         return !tableros.get(movimientoPasivo.getIndiceTablero()).getColor()
                 .equals(tableros.get(indiceTablero).getColor());
     }
@@ -163,7 +223,7 @@ public class Shobu {
      * @param indiceTablero Índice del tablero de un jugador.
      * @return ArrayList de posiciones destino válidas para el movimiento pasivo.
      */
-    public ArrayList<Posicion> getMovimientosPasivos(Posicion origen, int indiceTablero) {
+    public ArrayList<Posicion> getPosValidasPasivas(Posicion origen, int indiceTablero) {
         ArrayList<Posicion> posicionesValidas = new ArrayList<>();
         Tablero tablero = tableros.get(indiceTablero);
 
@@ -224,7 +284,7 @@ public class Shobu {
                 continue;
             }
 
-            // Ahora se revisa cada una de las piedras presentes en eñ tablero enemigo.
+            // Ahora se revisa cada una de las piedras presentes en el tablero enemigo.
             for (Piedra piedra : tablero.getPiedras().values()) {
                 // Esta condición permite conocer las piedras que pertenecen al jugador actual.
                 if (piedra.getPropietario() != turnoActual) {
@@ -269,11 +329,11 @@ public class Shobu {
      * @param indiceTablero Índice del tablero rival (de color opuesto al pasivo).
      * @return ArrayList de posiciones destino válidas, o vacía si no hay movimiento posible.
      */
-    public ArrayList<Posicion> getMovimientosAgresivos(Posicion origen, int indiceTablero) {
+    public ArrayList<Posicion> getPosValidasAgresivas(Posicion origen, int indiceTablero) {
         ArrayList<Posicion> posicionesValidas = new ArrayList<>();
 
         // Primero se verifica si el tablero agresivo es de color opuesto al tablero pasivo.
-        if (!validarTableroAgresivo(indiceTablero)) {
+        if (!esTableroOpuesto(indiceTablero)) {
             // Si el color no coincide, entonces no hay movimientos posibles.
             return posicionesValidas;
         }
@@ -309,9 +369,8 @@ public class Shobu {
      * Solo es válido en tableros propios del jugador, sin empuje y con destino válido.
      * Registra el movimiento para que el movimiento agresivo lo replique.
      * @param pasivo Movimiento pasivo a realizar.
-     * @return true si el movimiento fue ejecutado con éxito, false en caso de que no.
      */
-    public boolean hacerMovimientoPasivo(Movimiento pasivo) {
+    public void ejecutarMovimientoPasivo(Movimiento pasivo) {
         // Se obtiene el tablero en donde el jugador hizo clic.
         Tablero tablero = tableros.get(pasivo.getIndiceTablero());
 
@@ -319,11 +378,11 @@ public class Shobu {
         // El tablero no pertenezca al jugador actual.
         // El movimiento haga que esté fuera de los límites o pase sobre otras piedras.
         if (tablero.getPropietario() != turnoActual || !validarMovimiento(pasivo, tablero)) {
-            return false;
+            return;
         }
         // Se verifica que un movimiento pasivo termine en una casilla vacía.
         if (tablero.getPosPiedra(pasivo.getDestino()) != null) {
-            return false;
+            return;
         }
 
         // Sí pasó todas las condiciones, el tablero se actualiza
@@ -333,33 +392,31 @@ public class Shobu {
         movimientoPasivo = pasivo;
         // El booleano se marca como true al haber concluído el turno.
         pasivoRealizado = true;
-        return true;
     }
 
     /**
      * Actualiza la posición de una piedra en el tablero tras un movimiento.
      * Modifica tanto el tablero como el atributo posición de la piedra.
      * @param tablero Tablero donde ocurre el movimiento.
-     * @param movimiento Movimiento realizado.
+     * @param movimientoHecho Tipo de movimiento realizado.
      */
-    private void actualizarTablero(Tablero tablero, Movimiento movimiento) {
-        Piedra piedra = tablero.getPosPiedra(movimiento.getOrigen());
-        tablero.actualizarPosPiedra(movimiento.getOrigen(), movimiento.getDestino(), piedra);
-        piedra.setPosicion(movimiento.getDestino());
+    private void actualizarTablero(Tablero tablero, Movimiento movimientoHecho) {
+        Piedra piedra = tablero.getPosPiedra(movimientoHecho.getOrigen());
+        tablero.actualizarPosPiedra(movimientoHecho.getOrigen(), movimientoHecho.getDestino(), piedra);
+        piedra.setPosicion(movimientoHecho.getDestino());
     }
 
     /**
      * Ejecuta el movimiento agresivo del turno actual.
      * Replica exactamente la dirección y distancia del movimiento pasivo.
-     * @param agresivo Movimiento agresivo a realizar
-     * @return true si el movimiento fue ejecutado con éxito
+     * @param agresivo Movimiento agresivo a realizar.
      */
-    public boolean hacerMovimientoAgresivo(Movimiento agresivo) {
+    public void ejecutarMovimientoAgresivo(Movimiento agresivo) {
         // La condición regresa un false en caso de que:
         // No se haya completado el movimiento pasivo.
         // Si el tablero elegido no es del color opuesto al anterior.
-        if (!pasivoRealizado || !validarTableroAgresivo(agresivo.getIndiceTablero())) {
-            return false;
+        if (!pasivoRealizado || !esTableroOpuesto(agresivo.getIndiceTablero())) {
+            return;
         }
 
         Tablero tablero = tableros.get(agresivo.getIndiceTablero());
@@ -370,13 +427,13 @@ public class Shobu {
                 agresivo.getDeltaColumna() != movimientoPasivo.getDeltaColumna() ||
                 agresivo.getDistancia() != movimientoPasivo.getDistancia()) {
             // En caso de que no coincidan, regresará un false.
-            return false;
+            return;
         }
 
         // Se verifica que el camino esté libre de piedras,
         // y en caso de que haya una enemiga, esta pueda ser empujada (si se puede).
         if (!validarMovimiento(agresivo, tablero) || !validarEmpuje(agresivo, tablero)) {
-            return false;
+            return;
         }
 
         Posicion destino = agresivo.getDestino();
@@ -406,7 +463,6 @@ public class Shobu {
         pasivoRealizado = false;
         // La variable movimientoPasivo vuelve a su "valor" original.
         movimientoPasivo = null;
-        return true;
     }
 
     /**
@@ -437,71 +493,11 @@ public class Shobu {
     }
 
     /**
-     * Identifica y regresa al jugador ganador.
-     * @return El jugador ganador, o null si es que aún no hay un ganador.
-     */
-    public Jugador getGanador() {
-        // Se recorren cada uno de los 4 tableros del juego.
-        for (Tablero tablero : tableros) {
-            // Se asume que el dueño del tablero ya no tiene piedras.
-            boolean propietarioSinPiedras = true;
-            // Se revisan todas las piedras que hay en el HashMap del tablero actual.
-            for (Piedra piedra : tablero.getPiedras().values()) {
-                // Si hay al menos una piedra que pertenezca al dueño del tablero,
-                // significa que todavía no ha perdido en este tablero.
-                if (piedra.getPropietario() == tablero.getPropietario()) {
-                    // El booleano pasa ahora a ser false.
-                    propietarioSinPiedras = false;
-                    // Se deja de revisar el tablero y busca en el siguiente.
-                    break;
-                }
-            }
-            // Si aun el booleano sigue siendo true, pasa al interior de la condición.
-            if (propietarioSinPiedras) {
-                // Si el dueño del tablero perdió sus piedras, entonces el ganador es el otro jugador.
-                // Se consigue el ID para darle la victoria al jugador opuesto.
-                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
-                // Regresa el jugador correspondiente del ArrayList.
-                // Al ser diferentes el ID y el índice del ArrayList, es necesario realizar la resta.
-                return jugadores.get(idGanador - 1);
-            }
-        }
-        // En caso de que al revisar y nadie haya perdido, entonces regresará un null.
-        return null;
-    }
-
-    /**
-     * Regresa los 4 tableros.
-     * @return El ArrayList de los 4 tableros del juego.
-     */
-    public ArrayList<Tablero> getTableros() {
-        return tableros;
-    }
-
-    /**
-     * Regresa el valor del jugador actual.
-     * @return El jugador cuyo turno es actualmente.
-     */
-    public Jugador getJugadorActual() {
-        // Como el valor del turnoActual y el índice del ArrayList son diferentes,
-        // se debe realizar la resta para evitar un desbordamiento.
-        return jugadores.get(turnoActual - 1);
-    }
-
-    /**
-     * Regresa el booleano que se encarga de avisar si ya se realizó el mov. pasivo.
-     * @return true si ya se realizó el movimiento pasivo en el turno.
-     */
-    public boolean getPasivoRealizado() {
-        return pasivoRealizado;
-    }
-
-    /**
      * Realiza un turno completo controlado por la máquina.
      * Selecciona aleatoriamente un movimiento pasivo válido y luego ejecuta
      * el primer movimiento agresivo disponible que encuentre.
      */
-    public void realizarMovimientoMaquina() {
+    public void ejecutarMovimientoMaquina() {
         // Se crea un ArrayList para almacenar todas las combinaciones de movimientos posibles.
         ArrayList<int[]> opcionesPasivo = new ArrayList<>();
 
@@ -511,7 +507,7 @@ public class Shobu {
                 for (Piedra piedra : tablero.getPiedras().values()) {
                     if (piedra.getPropietario() == turnoActual) {
                         // Guarda los datos del movimiento (índice, origen y destino) en el ArrayList.
-                        ArrayList<Posicion> validos = getMovimientosPasivos(piedra.getPosicion(), tablero.getIndice());
+                        ArrayList<Posicion> validos = getPosValidasPasivas(piedra.getPosicion(), tablero.getIndice());
 
                         for (Posicion destino : validos) {
                             opcionesPasivo.add(new int[]{
@@ -545,15 +541,15 @@ public class Shobu {
                 new Posicion(opcion[3], opcion[4]),
                 true
         );
-        hacerMovimientoPasivo(pasivo);
+        ejecutarMovimientoPasivo(pasivo);
 
         // Busca en los tableros del color opuesto una piedra que pueda
         // replicar el movimiento pasivo recién realizado.
         for (Tablero tablero : tableros) {
-            if (validarTableroAgresivo(tablero.getIndice())) {
+            if (esTableroOpuesto(tablero.getIndice())) {
                 for (Piedra piedra : tablero.getPiedras().values()) {
                     if (piedra.getPropietario() == turnoActual) {
-                        ArrayList<Posicion> validos = getMovimientosAgresivos(piedra.getPosicion(), tablero.getIndice());
+                        ArrayList<Posicion> validos = getPosValidasAgresivas(piedra.getPosicion(), tablero.getIndice());
 
                         // En cuanto encuentra la primera piedra capaz de
                         // hacer el ataque, realiza el movimiento agresivo.
@@ -565,7 +561,7 @@ public class Shobu {
                                     validos.get(0),
                                     false
                             );
-                            hacerMovimientoAgresivo(agresivo);
+                            ejecutarMovimientoAgresivo(agresivo);
                             // Termina el turno de la máquina.
                             return;
                         }

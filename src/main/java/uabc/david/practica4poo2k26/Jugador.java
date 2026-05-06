@@ -12,7 +12,7 @@ public class Jugador {
     /**
      * Crea un jugador con nombre, identificador y tipo (si es humano o máquina).
      * @param nombre Nombre del jugador.
-     * @param identificador "ID" único del jugador (1 o 2).
+     * @param identificador ID único de jugador (1 o 2).
      * @param esMaquina es true si es controlado por la computadora.
      */
     public Jugador(String nombre, int identificador, boolean esMaquina) {

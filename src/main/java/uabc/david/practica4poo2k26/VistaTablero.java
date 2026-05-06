@@ -102,6 +102,14 @@ public class VistaTablero {
     }
 
     /**
+     * Devuelve el contenedor principal de la vista para que pueda integrarse a la GUI.
+     * @return VBox con la interfaz del juego.
+     */
+    public VBox getContenedor() {
+        return contenedor;
+    }
+
+    /**
      * Refresca toda la interfaz visual: etiquetas de turno, instrucción de fase y los 4 tableros.
      * No hace nada si el juego ya terminó.
      */
@@ -113,7 +121,7 @@ public class VistaTablero {
         // Si el juego sigue, los turnos se actualizan.
         actualizarTurnos();
         // Mostrar instrucción según la fase actual
-        estado.setText(shobu.getPasivoRealizado() ? "Haz un movimiento AGRESIVO en un tablero de color opuesto"
+        estado.setText(shobu.getPasivoRealizado() ? "Haz un movimiento AGRESIVO en un tablero del color opuesto"
                 : "Haz un movimiento PASIVO en tus tableros");
         // El ciclo hace que los 4 tableros se actualicen.
         for (int i = 0; i < 4; i++) {
@@ -217,32 +225,32 @@ public class VistaTablero {
     /**
      * Maneja la fase pasiva del turno.
      * @param indiceTablero Índice del tablero seleccionado.
-     * @param pos Posición seleccionada.
-     * @param piedra Piedra en la posición seleccionada.
+     * @param posSeleccionada Posición seleccionada.
+     * @param piedraEscogida Piedra en la posición seleccionada.
      * @param tablero Tablero seleccionado.
      */
-    private void manejarFasePasiva(int indiceTablero, Posicion pos, Piedra piedra, Tablero tablero) {
+    private void manejarFasePasiva(int indiceTablero, Posicion posSeleccionada, Piedra piedraEscogida, Tablero tablero) {
         // Verifica si no hay ninguna piedra seleccionada todavía.
         if (piedraSeleccionada == null) {
             // La condición se valida si:
             // Hay una piedra en la casilla.
             // La piedra es del jugador actual.
             // Está en los tableros que le pertenecen.
-            if (piedra != null &&
-                    piedra.getPropietario() == shobu.getJugadorActual().getIdentificador() &&
+            if (piedraEscogida != null &&
+                    piedraEscogida.getPropietario() == shobu.getJugadorActual().getIdentificador() &&
                     tablero.getPropietario() == shobu.getJugadorActual().getIdentificador()) {
 
                 // Guarda la piedra y el tablero para recordar que se va a mover.
-                piedraSeleccionada = piedra;
+                piedraSeleccionada = piedraEscogida;
                 indiceTableroSeleccionado = indiceTablero;
                 // Calcula y guarda los destinos válidos para resaltarlos de color verde.
-                posicionesResaltadas = shobu.getMovimientosPasivos(pos, indiceTablero);
+                posicionesResaltadas = shobu.getPosValidasPasivas(posSeleccionada, indiceTablero);
             }
         } else {
             // Se verifica si ya hay una piedra seleccionada, para que el jugador haga su segundo clic.
-            if (posicionesResaltadas.contains(pos)) {
+            if (posicionesResaltadas.contains(posSeleccionada)) {
                 // Ejecuta entonces un movimiento pasivo del juego.
-                shobu.hacerMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), pos, true));
+                shobu.ejecutarMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), posSeleccionada, true));
                 // Posteriormente la selección se limpia para la fase agresiva.
                 resetearSeleccion();
             } else {
@@ -267,7 +275,7 @@ public class VistaTablero {
             if (piedraEscogida != null && piedraEscogida.getPropietario() == shobu.getJugadorActual().getIdentificador()) {
 
                 // Calcula si la piedra puede repetir el movimiento del pasivo en el tablero.
-                ArrayList<Posicion> validos = shobu.getMovimientosAgresivos(posDestino, indiceTablero);
+                ArrayList<Posicion> validos = shobu.getPosValidasAgresivas(posDestino, indiceTablero);
 
                 // Solo selecciona si el movimiento es posible.
                 if (!validos.isEmpty()) {
@@ -280,7 +288,7 @@ public class VistaTablero {
         } else {
             if (posicionesResaltadas.contains(posDestino)) {
                 // Ejecuta un movimiento agresivo del juego.
-                shobu.hacerMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), posDestino, false));
+                shobu.ejecutarMovimientoAgresivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), posDestino, false));
 
                 // Verifica de antemano si ya hay una victoria antes de terminar el turno.
                 if (verificarVictoria()) {
@@ -297,7 +305,7 @@ public class VistaTablero {
 
                     pausa.setOnFinished(evento -> {
                         // La máquina hace su turno completo.
-                        shobu.realizarMovimientoMaquina();
+                        shobu.ejecutarMovimientoMaquina();
 
                         // Verifica si la máquina llegó a eliminar la última piedra de un tablero.
                         if (verificarVictoria()) {
@@ -405,13 +413,5 @@ public class VistaTablero {
         }
         // Si no hay ganador, entonces regresará un false.
         return false;
-    }
-
-    /**
-     * Devuelve el contenedor principal de la vista para que pueda integrarse a la GUI.
-     * @return VBox con la interfaz del juego.
-     */
-    public VBox getContenedor() {
-        return contenedor;
     }
 }
