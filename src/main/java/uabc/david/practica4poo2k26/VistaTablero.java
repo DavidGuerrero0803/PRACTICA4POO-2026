@@ -206,19 +206,19 @@ public class VistaTablero {
         }
 
         // Las coordenadas del clic son convertidas en instancias.
-        Posicion posicionClicada = new Posicion(fila, columna);
+        Posicion posicionSeleccionada = new Posicion(fila, columna);
         Tablero tablero = shobu.getTableros().get(indiceTablero);
 
         // Revisa si en el lugar donde se hizo clic hay una piedra.
-        Piedra piedraEnCasilla = tablero.getPosPiedra(posicionClicada);
+        Piedra piedraEnCasilla = tablero.getPosPiedra(posicionSeleccionada);
 
         // Se verifica si ya se hizo o aún no el movimiento pasivo.
         if (!shobu.getPasivoRealizado()) {
             // Si aún no hay movimiento pasivo, el clic nada más puede seleccionar/mover piedras propias.
-            manejarFasePasiva(indiceTablero, posicionClicada, piedraEnCasilla, tablero);
+            manejarFasePasiva(indiceTablero, posicionSeleccionada, piedraEnCasilla, tablero);
         } else {
             // Si ya hubo el movimiento pasivo, entonces el clic hará el movimiento agresivo.
-            manejarFaseAgresiva(indiceTablero, posicionClicada, piedraEnCasilla);
+            manejarFaseAgresiva(indiceTablero, posicionSeleccionada, piedraEnCasilla);
         }
     }
 
