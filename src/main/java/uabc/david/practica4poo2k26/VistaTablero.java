@@ -244,7 +244,7 @@ public class VistaTablero {
                 piedraSeleccionada = piedraEscogida;
                 indiceTableroSeleccionado = indiceTablero;
                 // Calcula y guarda los destinos válidos para resaltarlos de color verde.
-                posicionesResaltadas = shobu.getPosValidasPasivas(posSeleccionada, indiceTablero);
+                posicionesResaltadas = shobu.getPosPasivasValidas(posSeleccionada, indiceTablero);
             }
         } else {
             // Se verifica si ya hay una piedra seleccionada, para que el jugador haga su segundo clic.
@@ -275,7 +275,7 @@ public class VistaTablero {
             if (piedraEscogida != null && piedraEscogida.getPropietario() == shobu.getJugadorActual().getIdentificador()) {
 
                 // Calcula si la piedra puede repetir el movimiento del pasivo en el tablero.
-                ArrayList<Posicion> validos = shobu.getPosValidasAgresivas(posDestino, indiceTablero);
+                ArrayList<Posicion> validos = shobu.getPosAgresivasValidas(posDestino, indiceTablero);
 
                 // Solo selecciona si el movimiento es posible.
                 if (!validos.isEmpty()) {

@@ -214,7 +214,7 @@ public class Shobu {
      * @param indiceTablero Índice del tablero de un jugador.
      * @return ArrayList de posiciones destino válidas para el movimiento pasivo.
      */
-    public ArrayList<Posicion> getPosValidasPasivas(Posicion origen, int indiceTablero) {
+    public ArrayList<Posicion> getPosPasivasValidas(Posicion origen, int indiceTablero) {
         ArrayList<Posicion> posicionesValidas = new ArrayList<>();
         Tablero tablero = tableros.get(indiceTablero);
 
@@ -320,7 +320,7 @@ public class Shobu {
      * @param indiceTablero Índice del tablero rival (de color opuesto al pasivo).
      * @return ArrayList de posiciones destino válidas, o vacía si no hay movimiento posible.
      */
-    public ArrayList<Posicion> getPosValidasAgresivas(Posicion origen, int indiceTablero) {
+    public ArrayList<Posicion> getPosAgresivasValidas(Posicion origen, int indiceTablero) {
         ArrayList<Posicion> posicionesValidas = new ArrayList<>();
 
         // Primero se verifica si el tablero agresivo es de color opuesto al tablero pasivo.
@@ -529,8 +529,8 @@ public class Shobu {
                 if (piedra.getPropietario() != turnoActual) {
                     continue;
                 }
-                // getPosValidasPasivas() devuelve todos los destinos válidos para esta piedra.
-                for (Posicion destino : getPosValidasPasivas(piedra.getPosicion(), tablero.getIndice())) {
+                // getPosPasivasValidas() devuelve todos los destinos válidos para esta piedra.
+                for (Posicion destino : getPosPasivasValidas(piedra.getPosicion(), tablero.getIndice())) {
                     opciones.add(new Movimiento(tablero.getIndice(), piedra.getPosicion(), destino, true));
                 }
             }
@@ -560,8 +560,8 @@ public class Shobu {
                 if (piedra.getPropietario() != turnoActual) {
                     continue;
                 }
-                // getPosValidasAgresivas() devuelve los destinos válidos que se pueden replicar.
-                ArrayList<Posicion> validos = getPosValidasAgresivas(piedra.getPosicion(), tablero.getIndice());
+                // getPosAgresivasValidas() devuelve los destinos válidos que se pueden replicar.
+                ArrayList<Posicion> validos = getPosAgresivasValidas(piedra.getPosicion(), tablero.getIndice());
                 if (!validos.isEmpty()) {
                     // Si puede ejecutar el movimiento, encontrará la primera piedra capaz de atacar.
                     return new Movimiento(tablero.getIndice(), piedra.getPosicion(), validos.get(0), false);
