@@ -95,32 +95,23 @@ public class Shobu {
      * @return El jugador ganador, o null si es que aún no hay un ganador.
      */
     public Jugador getGanador() {
-        // Se recorren cada uno de los 4 tableros del juego.
         for (Tablero tablero : tableros) {
-            // Se asume que el dueño del tablero ya no tiene piedras.
-            boolean jugadorSinPiedras = true;
-            // Se revisan todas las piedras que hay en el HashMap del tablero actual.
-            for (Piedra piedra : tablero.getPiedras().values()) {
-                // Si hay al menos una piedra que pertenezca al dueño del tablero,
-                // significa que todavía no ha perdido en este tablero.
-                if (piedra.getPropietario() == tablero.getPropietario()) {
-                    // El booleano pasa ahora a ser false.
-                    jugadorSinPiedras = false;
-                    // Se deja de revisar el tablero y busca en el siguiente.
-                    break;
-                }
+            int piedrasJ1 = (int) tablero.getPiedras().values().stream()
+                    .filter(p -> p.getPropietario() == 1).count();
+
+            int piedrasJ2 = (int) tablero.getPiedras().values().stream()
+                    .filter(p -> p.getPropietario() == 2).count();
+
+            if (piedrasJ1 == 0) {
+                // Gana Jugador 2 (índice 1).
+                return jugadores.get(1);
             }
-            // Si aun el booleano sigue siendo true, pasa al interior de la condición.
-            if (jugadorSinPiedras) {
-                // Si el dueño del tablero perdió sus piedras, entonces el ganador es el otro jugador.
-                // Se consigue el ID para darle la victoria al jugador opuesto.
-                int idGanador = (tablero.getPropietario() == 1) ? 2 : 1;
-                // Regresa el jugador correspondiente del ArrayList.
-                // Al ser diferentes el ID y el índice del ArrayList, es necesario realizar la resta.
-                return jugadores.get(idGanador - 1);
+            if (piedrasJ2 == 0) {
+                // Gana Jugador 1 (índice 0)
+                return jugadores.get(0);
             }
         }
-        // En caso de que al revisar y nadie haya perdido, entonces regresará un null.
+        // Si no hay ganador, se regresará un null.
         return null;
     }
 
@@ -483,91 +474,101 @@ public class Shobu {
         // El ArrayList pasa por un flujo para llegar a un anyMatch, este sirve para
         // encontrar al menos un tablero que cumpla con la condición interior.
         return tableros.stream().anyMatch(tablero -> {
-            // Se obtiene al dueño del tablero actual.
-            int propietario = tablero.getPropietario();
-            // Ahora el HashMap del tablero pasa por un nuevo flujo, dentro de él
-            // se usa noneMatch para saber si ya no hay ninguna piedra en uno de sus tableros.
-            return tablero.getPiedras().values().stream()
-                    .noneMatch(piedra -> piedra.getPropietario() == propietario);
+            // Cuenta cuántas piedras tiene cada jugador en el tablero.
+            int piedrasJ1 = (int) tablero.getPiedras().values().stream()
+                    .filter(piedra -> piedra.getPropietario() == 1).count();
+
+            int piedrasJ2 = (int) tablero.getPiedras().values().stream()
+                    .filter(piedra -> piedra.getPropietario() == 2).count();
+
+            // Si alguno llegó a cero, hay un ganador
+            return piedrasJ1 == 0 || piedrasJ2 == 0;
         });
     }
 
     /**
-     * Realiza un turno completo controlado por la máquina.
-     * Selecciona aleatoriamente un movimiento pasivo válido y luego ejecuta
-     * el primer movimiento agresivo disponible que encuentre.
+     * Realiza un turno completo hecho por la máquina.
+     * Primero realiza su movimiento pasivo aleatorio
+     * y después ejecuta el primer movimiento agresivo que esté disponible.
      */
     public void ejecutarMovimientoMaquina() {
-        // Se crea un ArrayList para almacenar todas las combinaciones de movimientos posibles.
-        ArrayList<int[]> opcionesPasivo = new ArrayList<>();
-
-        // Recorre los tableros y piedras buscando movimientos pasivos válidos.
-        for (Tablero tablero : tableros) {
-            if (tablero.getPropietario() == turnoActual) {
-                for (Piedra piedra : tablero.getPiedras().values()) {
-                    if (piedra.getPropietario() == turnoActual) {
-                        // Guarda los datos del movimiento (índice, origen y destino) en el ArrayList.
-                        ArrayList<Posicion> validos = getPosValidasPasivas(piedra.getPosicion(), tablero.getIndice());
-
-                        for (Posicion destino : validos) {
-                            opcionesPasivo.add(new int[]{
-                                    tablero.getIndice(),
-                                    piedra.getPosicion().getFila(),
-                                    piedra.getPosicion().getColumna(),
-                                    destino.getFila(),
-                                    destino.getColumna()
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        // Se verifica si hay movimientos posibles.
-        if (opcionesPasivo.isEmpty()) {
-            // En caso de no haberlos, la ejecución de realizarMovimientoMaquina() se detiene.
+        // Toma un movimiento pasivo aleatorio disponible.
+        Movimiento pasivo = elegirMovimientoPasivo();
+        // Si no se encontró movimiento pasivo posible, la máquina no podrá jugar.
+        if (pasivo == null) {
             return;
         }
-
-        // Elige una opción al azar del ArrayList, sirve para no ser predecible.
-        // Se usa Math.random() para generar un double entre 0.0 a 1.0, pasándolo a int con casting.
-        // Posteriormente, multiplica ese decimal por el total de movimientos encontrados.
-        int[] opcion = opcionesPasivo.get((int)(Math.random() * opcionesPasivo.size()));
-        Movimiento pasivo = new Movimiento(
-                // 0 = ID tablero, 1 = fila origen, 2 = columna origen,
-                // 3 = fila destino, 4 = fila columna.
-                opcion[0],
-                new Posicion(opcion[1], opcion[2]),
-                new Posicion(opcion[3], opcion[4]),
-                true
-        );
+        // Ejecutará su movimiento pasivo con la opción aleatoria regresada.
         ejecutarMovimientoPasivo(pasivo);
 
-        // Busca en los tableros del color opuesto una piedra que pueda
-        // replicar el movimiento pasivo recién realizado.
-        for (Tablero tablero : tableros) {
-            if (esTableroOpuesto(tablero.getIndice())) {
-                for (Piedra piedra : tablero.getPiedras().values()) {
-                    if (piedra.getPropietario() == turnoActual) {
-                        ArrayList<Posicion> validos = getPosValidasAgresivas(piedra.getPosicion(), tablero.getIndice());
+        // Toma un movimiento agresivo que sea capaz de poder replicar.
+        Movimiento agresivo = elegirMovimientoAgresivo();
+        // La condición hará que pueda atacar si encontró un movimiento agresivo válido.
+        if (agresivo != null) {
+            ejecutarMovimientoAgresivo(agresivo);
+        }
+    }
 
-                        // En cuanto encuentra la primera piedra capaz de
-                        // hacer el ataque, realiza el movimiento agresivo.
-                        if (!validos.isEmpty()) {
-                            Movimiento agresivo = new Movimiento(
-                                    tablero.getIndice(),
-                                    piedra.getPosicion(),
-                                    // Escoge el primer destino válido encontrado.
-                                    validos.get(0),
-                                    false
-                            );
-                            ejecutarMovimientoAgresivo(agresivo);
-                            // Termina el turno de la máquina.
-                            return;
-                        }
-                    }
+    /**
+     * Recolecta todos los movimientos pasivos válidos disponibles
+     * para la máquina y devuelve uno elegido al azar.
+     * @return Un Movimiento pasivo al azar, null si no hay ninguno disponible.
+     */
+    private Movimiento elegirMovimientoPasivo() {
+        // ArrayList que guardará todos los movimientos pasivos posibles.
+        ArrayList<Movimiento> opciones = new ArrayList<>();
+
+        // El ciclo for recorre todos los tableros.
+        for (Tablero tablero : tableros) {
+            // Esta condición considera los tableros propios de la máquina.
+            if (tablero.getPropietario() != turnoActual) {
+                continue;
+            }
+            for (Piedra piedra : tablero.getPiedras().values()) {
+                // Esta condición considera las piedras propias de la máquina.
+                if (piedra.getPropietario() != turnoActual) {
+                    continue;
+                }
+                // getPosValidasPasivas() devuelve todos los destinos válidos para esta piedra.
+                for (Posicion destino : getPosValidasPasivas(piedra.getPosicion(), tablero.getIndice())) {
+                    opciones.add(new Movimiento(tablero.getIndice(), piedra.getPosicion(), destino, true));
                 }
             }
         }
+        // Si no se llega a haber una opción, la máquina no tendrá movimientos disponibles.
+        if (opciones.isEmpty()) {
+            return null;
+        }
+        // Se usa Math.random() para generar un valor de 0.0 a 1.0, ese valor
+        // se multiplica por el tamaño del ArrayList y se convierte en int, ese será el índice aleatorio.
+        return opciones.get((int)(Math.random() * opciones.size()));
+    }
+
+    /**
+     * Busca el primer movimiento agresivo válido disponible para la máquina.
+     * @return El primer Movimiento agresivo válido encontrado, null si no hay ninguno.
+     */
+    private Movimiento elegirMovimientoAgresivo() {
+        // El ciclo for recorre todos los tableros.
+        for (Tablero tablero : tableros) {
+            // Solo se consideran tableros de color opuesto al tablero del movimiento pasivo.
+            if (!esTableroOpuesto(tablero.getIndice())) {
+                continue;
+            }
+            for (Piedra piedra : tablero.getPiedras().values()) {
+                // Solo se consideran las piedras propias de la máquina.
+                if (piedra.getPropietario() != turnoActual) {
+                    continue;
+                }
+                // getPosValidasAgresivas() devuelve los destinos válidos que se pueden replicar.
+                ArrayList<Posicion> validos = getPosValidasAgresivas(piedra.getPosicion(), tablero.getIndice());
+                if (!validos.isEmpty()) {
+                    // Si puede ejecutar el movimiento, encontrará la primera piedra capaz de atacar.
+                    return new Movimiento(tablero.getIndice(), piedra.getPosicion(), validos.get(0), false);
+                }
+            }
+        }
+        // Si ninguna piedra pudo realizar un movimiento agresivo, regresará null.
+        return null;
     }
 }

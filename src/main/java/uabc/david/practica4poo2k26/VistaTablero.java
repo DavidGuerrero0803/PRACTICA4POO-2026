@@ -397,21 +397,25 @@ public class VistaTablero {
     private boolean verificarVictoria() {
         // Busca si en el juego ya hay un ganador.
         if (shobu.hayGanador()) {
-            // En caso de que lo haya, juegoTerminado se marca como true.
-            this.juegoTerminado = true;
-            // Cambia la etiqueta de los estados para anunciar al ganador con un color verde.
-            estado.setText("EL GANADOR ES EL " + shobu.getGanador().getNombre().toUpperCase());
-            estado.setTextFill(Color.GREEN);
-            // Actualiza por última vez los 4 tableros.
-            for (int i = 0; i < 4; i++) {
-                // Muestra el estado final del tablero completo.
-                actualizarGridPane(i);
-            }
-            // Finalmente, se bloquea toda interacción dentro de la interfaz.
-            contenedor.setDisable(true);
-            return true;
+            Jugador ganador = shobu.getGanador();
+                // Se verifica que el ganador sea diferente a null.
+                if (ganador != null) {
+                    // En caso de que lo haya, juegoTerminado se marca como true.
+                    this.juegoTerminado = true;
+                    // Cambia la etiqueta de los estados para anunciar al ganador con un color verde.
+                    estado.setText("EL GANADOR ES EL " + ganador.getNombre().toUpperCase());
+                    estado.setTextFill(Color.GREEN);
+                    // Actualiza por última vez los 4 tableros.
+                    for (int i = 0; i < 4; i++) {
+                        // Muestra el estado final del tablero completo.
+                        actualizarGridPane(i);
+                    }
+                    // Finalmente, se bloquea toda interacción dentro de la interfaz.
+                    contenedor.setDisable(true);
+                    return true;
+                }
         }
-        // Si no hay ganador, entonces regresará un false.
+        // Si no hay ganador aún, entonces regresará un false.
         return false;
     }
 }
