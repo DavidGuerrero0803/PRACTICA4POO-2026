@@ -24,6 +24,10 @@ public class Movimiento {
         this.esPasivo = esPasivo;
     }
 
+    /**
+     * Regresa true o false si es movimiento pasivo o no.
+     * @return true si se trata de movimiento pasivo, false en caso de que no,
+     */
     public boolean esPasivo() {
         return esPasivo;
     }
