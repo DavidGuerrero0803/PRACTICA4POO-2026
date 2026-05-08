@@ -643,6 +643,7 @@ public class Shobu {
             return null;
         }
 
+        Collections.shuffle(opcionesAgresivas);
         // Elige cualquier piedra y cualquier tablero válido al azar.
         return opcionesAgresivas.get((int)(Math.random() * opcionesAgresivas.size()));
     }
