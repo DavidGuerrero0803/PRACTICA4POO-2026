@@ -611,7 +611,7 @@ public class Shobu {
     }
 
     /**
-     * Busca el primer movimiento agresivo válido disponible para la máquina.
+     * Busca un movimiento agresivo válido al azar disponible para la máquina.
      * @return El primer Movimiento agresivo válido encontrado, null si no hay ninguno.
      */
     private Movimiento elegirMovimientoAgresivo() {
