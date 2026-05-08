@@ -1,6 +1,7 @@
 package uabc.david.practica4poo2k26;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Esta clase maneja la lógica del Shobu.
@@ -283,6 +284,7 @@ public class Shobu {
                 }
             }
         }
+        // Regresa el ArrayList con todas las posiciones pasivas que son válidas.
         return posicionesValidas;
     }
 
@@ -380,7 +382,7 @@ public class Shobu {
             posicionesValidas.add(destino);
         }
 
-        // Devuelve el ArrayList con el movimiento hecho.
+        // Regresa el ArrayList con las posiciones agresivas que son válidas.
         return posicionesValidas;
     }
 
@@ -599,8 +601,10 @@ public class Shobu {
         if (opciones.isEmpty()) {
             return null;
         }
-        // Se usa Math.random() para generar un valor de 0.0 a 1.0, ese valor
-        // se multiplica por el tamaño del ArrayList y se convierte en int, ese será el índice aleatorio.
+        // Mezcla aleatoriamente todas las opciones antes de elegir.
+        Collections.shuffle(opciones);
+        // Se usa Math.random() para generar un valor de 0.0 a 1.0, ese valor se multiplica
+        // por el tamaño del ArrayList y se convierte en int, ese será el índice aleatorio.
         return opciones.get((int)(Math.random() * opciones.size()));
     }
 
@@ -609,6 +613,9 @@ public class Shobu {
      * @return El primer Movimiento agresivo válido encontrado, null si no hay ninguno.
      */
     private Movimiento elegirMovimientoAgresivo() {
+        // ArrayList que guardará todas las opciones agresivas posibles.
+        ArrayList<Movimiento> opcionesAgresivas = new ArrayList<>();
+
         // El ciclo for recorre todos los tableros.
         for (Tablero tablero : tableros) {
             // Solo se consideran tableros de color opuesto al tablero del movimiento pasivo.
@@ -622,13 +629,19 @@ public class Shobu {
                 }
                 // getPosAgresivasValidas() devuelve los destinos válidos que se pueden replicar.
                 ArrayList<Posicion> validos = getPosAgresivasValidas(piedra.getPosicion(), tablero.getIndice());
-                if (!validos.isEmpty()) {
-                    // Si puede ejecutar el movimiento, encontrará la primera piedra capaz de atacar.
-                    return new Movimiento(tablero.getIndice(), piedra.getPosicion(), validos.get(0), false);
+                // Guarda la opción si la piedra es capaz replicar el movimiento.
+                for (Posicion posValida : validos) {
+                    opcionesAgresivas.add(new Movimiento(tablero.getIndice(), piedra.getPosicion(), posValida, false));
                 }
             }
         }
-        // Si ninguna piedra pudo realizar un movimiento agresivo, regresará null.
-        return null;
+
+        // Si no hay opciones agresivas, regresará null.
+        if (opcionesAgresivas.isEmpty()) {
+            return null;
+        }
+
+        // Elige cualquier piedra y cualquier tablero válido al azar.
+        return opcionesAgresivas.get((int)(Math.random() * opcionesAgresivas.size()));
     }
 }
