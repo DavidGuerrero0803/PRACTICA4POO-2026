@@ -152,9 +152,10 @@ public class Shobu {
                     origen.getFila() + posibleMovimiento.getDeltaFila(),
                     origen.getColumna() + posibleMovimiento.getDeltaColumna()
             );
-            // Se realiza la condición para saber si el movimiento de 2 es válido.
-            if (tablero.getPosPiedra(intermedia) != null) {
-                // En caso de cumplirla, el movimiento no es válido.
+            Piedra piedraIntermedia = tablero.getPosPiedra(intermedia);
+            // Una piedra propia en el camino siempre bloquea el movimiento.
+            // Una piedra enemiga intermedia podría ser empujable.
+            if (piedraIntermedia != null && piedraIntermedia.getPropietario() == turnoActual) {
                 return false;
             }
         }
@@ -172,18 +173,46 @@ public class Shobu {
         Posicion destino = agresivoAValidar.getDestino();
         Piedra piedraDestino = tablero.getPosPiedra(destino);
 
-        // Esta condición permite saber si la casilla está o no vacía.
+        // Condiciona una distancia 2 con piedra enemiga en la casilla intermedia.
+        if (agresivoAValidar.getDistancia() == 2) {
+            Posicion intermedia = new Posicion(
+                    agresivoAValidar.getOrigen().getFila() + agresivoAValidar.getDeltaFila(),
+                    agresivoAValidar.getOrigen().getColumna() + agresivoAValidar.getDeltaColumna()
+            );
+            Piedra piedraIntermedia = tablero.getPosPiedra(intermedia);
+
+            if (piedraIntermedia != null && piedraIntermedia.getPropietario() != turnoActual) {
+                // El destino debe estar vacío para recibir la piedra empujada.
+                if (piedraDestino != null) {
+                    return false;
+                }
+                // Además, la casilla detrás del destino no debe tener otra piedra,
+                // para evitar que el deslizamiento arrastre más de una pieza.
+                Posicion detrasDelDestino = new Posicion(
+                        destino.getFila() + agresivoAValidar.getDeltaFila(),
+                        destino.getColumna() + agresivoAValidar.getDeltaColumna()
+                );
+                if (detrasDelDestino.getFila() >= 0 && detrasDelDestino.getFila() <= 3 &&
+                        detrasDelDestino.getColumna() >= 0 && detrasDelDestino.getColumna() <= 3) {
+                    if (tablero.getPosPiedra(detrasDelDestino) != null) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        // Si no hay piedra intermedia enemiga, se revisa solo el destino.
         if (piedraDestino == null) {
-            // Si lo está, entonces no hay nada que empujar.
+            // Casilla vacía, no hay nada que empujar.
             return true;
         }
-        // Esta condición permite saber si es una casilla propia.
         if (piedraDestino.getPropietario() == turnoActual) {
-            // Regresará false ya que no se puede empujar una casilla propia.
+            // No se puede empujar una piedra propia.
             return false;
         }
 
-        // Calcula la posición de la piedra empujada.
+        // Hay una enemiga en el destino, se debe calcular a dónde iría empujada.
         Posicion posEmpuje = new Posicion(
                 destino.getFila() + agresivoAValidar.getDeltaFila(),
                 destino.getColumna() + agresivoAValidar.getDeltaColumna()
@@ -428,23 +457,54 @@ public class Shobu {
         }
 
         Posicion destino = agresivo.getDestino();
-        Piedra piedraEnemiga = tablero.getPosPiedra(destino);
 
-        if (piedraEnemiga != null) {
-            // Se calcula en dónde terminará la piedra enemiga tras ser empujada.
+        // Se condiciona si el movimiento agresivo es de desplazamiento 2.
+        if (agresivo.getDistancia() == 2) {
+            // Se calcula la casilla intermedia entre el origen y el destino.
+            Posicion intermedia = new Posicion(
+                    agresivo.getOrigen().getFila() + agresivo.getDeltaFila(),
+                    agresivo.getOrigen().getColumna() + agresivo.getDeltaColumna()
+            );
+            Piedra piedraIntermedia = tablero.getPosPiedra(intermedia);
+
+            // Solo actúa si hay una piedra enemiga en la casilla intermedia.
+            if (piedraIntermedia != null && piedraIntermedia.getPropietario() != turnoActual) {
+                // La piedra intermedia no va al destino, sino una casilla más allá,
+                // ya que la piedra propia ocupará el destino al desplazarse.
+                Posicion nuevaPosEnemiga = new Posicion(
+                        destino.getFila() + agresivo.getDeltaFila(),
+                        destino.getColumna() + agresivo.getDeltaColumna()
+                );
+
+                // Si la nueva posición queda fuera del tablero, la piedra es eliminada.
+                if (nuevaPosEnemiga.getFila() < 0 || nuevaPosEnemiga.getFila() > 3 ||
+                        nuevaPosEnemiga.getColumna() < 0 || nuevaPosEnemiga.getColumna() > 3) {
+                    tablero.eliminarPiedra(piedraIntermedia);
+                } else {
+                    // Si aún quedó dentro del tablero, su posición se actualiza.
+                    tablero.actualizarPosPiedra(intermedia, nuevaPosEnemiga, piedraIntermedia);
+                    piedraIntermedia.setPosicion(nuevaPosEnemiga);
+                }
+            }
+            // Tras manejar la piedra intermedia, el destino queda libre para verificarse.
+        }
+
+        // Se verifica si quedó alguna piedra enemiga directamente en el destino.
+        Piedra piedraEnDestino = tablero.getPosPiedra(destino);
+        if (piedraEnDestino != null && piedraEnDestino.getPropietario() != turnoActual) {
+            // Se calcula a dónde irá empujada la piedra enemiga del destino.
             Posicion nuevaPosEnemiga = new Posicion(
                     destino.getFila() + agresivo.getDeltaFila(),
                     destino.getColumna() + agresivo.getDeltaColumna()
             );
-            // En caso de que la nueva posición está fuera de los límites,
-            // la piedra se eliminará del juego.
+            // Si la nueva posición queda fuera del tablero, la piedra es eliminada.
             if (nuevaPosEnemiga.getFila() < 0 || nuevaPosEnemiga.getFila() > 3 ||
                     nuevaPosEnemiga.getColumna() < 0 || nuevaPosEnemiga.getColumna() > 3) {
-                tablero.eliminarPiedra(piedraEnemiga);
+                tablero.eliminarPiedra(piedraEnDestino);
             } else {
-                // Si aún está dentro de los márgenes, actualiza la posición de la piedra enemiga.
-                tablero.actualizarPosPiedra(destino, nuevaPosEnemiga, piedraEnemiga);
-                piedraEnemiga.setPosicion(nuevaPosEnemiga);
+                // Si aún está dentro del tablero, se desplaza a la casilla calculada.
+                tablero.actualizarPosPiedra(destino, nuevaPosEnemiga, piedraEnDestino);
+                piedraEnDestino.setPosicion(nuevaPosEnemiga);
             }
         }
 
