@@ -248,7 +248,7 @@ public class VistaTablero {
             }
         } else {
             // Se verifica si ya hay una piedra seleccionada, para que el jugador haga su segundo clic.
-            if (posicionesResaltadas.contains(posSeleccionada)) {
+            if (posicionesResaltadas.contains(posSeleccionada) && indiceTablero == indiceTableroSeleccionado) {
                 // Ejecuta entonces un movimiento pasivo del juego.
                 shobu.ejecutarMovimientoPasivo(new Movimiento(indiceTableroSeleccionado, piedraSeleccionada.getPosicion(), posSeleccionada, true));
                 // Posteriormente la selección se limpia para la fase agresiva.
