@@ -8,6 +8,7 @@ public class Movimiento {
     private Posicion origen;
     private Posicion destino;
     private int indiceTablero;
+    private boolean esPasivo;
 
     /**
      * Crea un movimiento entre dos posiciones en un tablero.
@@ -20,6 +21,11 @@ public class Movimiento {
         this.indiceTablero = indiceTablero;
         this.origen = origen;
         this.destino = destino;
+        this.esPasivo = esPasivo;
+    }
+
+    public boolean esPasivo() {
+        return esPasivo;
     }
 
     /**
@@ -88,4 +94,5 @@ public class Movimiento {
         // Regresa el máximo entre la diferencia absoluta de fila y columna.
         return Math.max(diferenciaFila, diferenciaColumna);
     }
+
 }

@@ -154,13 +154,24 @@ public class Shobu {
                     origen.getColumna() + posibleMovimiento.getDeltaColumna()
             );
             Piedra piedraIntermedia = tablero.getPosPiedra(intermedia);
-            // Una piedra propia en el camino siempre bloquea el movimiento.
-            // Una piedra enemiga intermedia podría ser empujable.
-            if (piedraIntermedia != null && piedraIntermedia.getPropietario() == turnoActual) {
-                return false;
+
+            if (piedraIntermedia != null) {
+                // Condiciona que, en movimiento pasivo, la casilla intermedia debe estar vacía.
+                if (posibleMovimiento.esPasivo()) {
+                    return false;
+                }
+                // Mientras que en movimiento agresivo, solo bloquea si es piedra propia.
+                if (piedraIntermedia.getPropietario() == turnoActual) {
+                    return false;
+                }
             }
         }
-        // Si con las condiciones no se detiene, se tomará como movimiento válido.
+
+        // Validación del destino para movimientos pasivos.
+        if (posibleMovimiento.esPasivo() && tablero.getPosPiedra(destino) != null) {
+            return false;
+        }
+
         return true;
     }
 
@@ -267,18 +278,9 @@ public class Shobu {
                     );
                     Movimiento movimiento = new Movimiento(indiceTablero, origen, destino, true);
 
-                    // Verifica si el destino está dentro del tablero y el camino está despejado.
-                    if (!validarMovimiento(movimiento, tablero)) {
-                        continue;
-                    }
-                    // Verifica que un movimiento pasivo no pueda terminar en una casilla ocupada.
-                    if (tablero.getPosPiedra(destino) != null) {
-                        continue;
-                    }
-
                     // Se valida si el movimiento pasivo es legal, teniendo en cuenta
                     // que ese mismo movimiento debe ser replicable en un movimiento agresivo.
-                    if (validarAtaqueAgresivo(movimiento)) {
+                    if (validarMovimiento(movimiento, tablero) && validarAtaqueAgresivo(movimiento)) {
                         posicionesValidas.add(destino);
                     }
                 }
